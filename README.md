@@ -1,0 +1,2 @@
+# MouseDB
+An OLAP database.
