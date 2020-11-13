@@ -1,0 +1,22 @@
+{
+    // "storage_path": "二进制表文件的存储路径",  
+    // 我决定把表头json和表的数据内容都存放在以表头命名的同一个文件夹下，这样一个路径就可以完事
+    "table_name": "表名",
+    "primary_key": {
+        "name": "order",
+        "type": "int",
+        "not_null": 1
+    },
+    "other_keys": [
+        {
+            "name": "name",
+            "type": "float",
+            "not_null": 0
+        },
+        {
+            "name": "score",
+            "type": "long_int",
+            "not_null": 0
+        }
+    ]
+}
