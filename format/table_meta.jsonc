@@ -1,22 +1,42 @@
 {
-    // "storage_path": "二进制表文件的存储路径",  
     // 我决定把表头json和表的数据内容都存放在以表头命名的同一个文件夹下，这样一个路径就可以完事
+
+    // 支持数据类型：
+    // uint_8_t
+    // uint_16_t
+    // uint_32_t
+    // uint_64_t
+    // int_8_t
+    // int_16_t
+    // int_32_t（默认int）
+    // int_64_t
+    // float
+    // double
+    // char（须指定长度）
+
+    // type中出现的类型：int、char、float、double
     "table_name": "表名",
-    "primary_key": {
-        "name": "order",
-        "type": "int",
-        "not_null": 1
-    },
-    "other_keys": [
+    "primary_key": [
+        {
+            "name": "foo",
+            "type": "int",
+            "length":-8 // 负号表示sighed，表示int_8_t
+        },
+        {
+            "name": "bar",
+            "type": "int",
+            "length":32 // 正数表示unsigned，表示uint_32_t
+        }
+    ],
+    "other_keys": [ 
         {
             "name": "name",
-            "type": "float",
-            "not_null": 0
+            "type": "float" // float与double无需指定length
         },
         {
             "name": "score",
-            "type": "long_int",
-            "not_null": 0
+            "type": "char",
+            "length":9  // 表示char[9]
         }
     ]
 }
