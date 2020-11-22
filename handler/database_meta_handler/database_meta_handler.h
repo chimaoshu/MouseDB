@@ -1,6 +1,8 @@
 #ifndef MOUSEDB_HANDLER_DATABASE_META_HANDLER_DATABASE_META_HANDLER_H_
 #define MOUSEDB_HANDLER_DATABASE_META_HANDLER_DATABASE_META_HANDLER_H_
 
+#include<sys/stat.h>
+
 #include <string>
 
 #include "lib/Json/single_include/nlohmann/json.hpp"
@@ -16,7 +18,8 @@ using json = nlohmann::json;
 
 // 负责数据库元数据的读取、增删、修改与保存
 // 所有其他处出现的数据库元数据JSON对象均来自对该类成员的引用
-// 不负责元数据JSON对象的某项属性的查询任务，只负责返回JSON对象的引用
+// 因此除非你确定以后不会再对meta信息进行读写操作，那么你不应该删除实例
+// 该类实例不应该被释放，直到程序结束
 class DatabaseMetaHandler
 {
 private:
@@ -32,7 +35,7 @@ private:
     // 通过类成员中的文件路径去读取元数据
     // 当文件读取失败时，会抛出异常
     // 当JSON格式不合法时，会返回错误码
-    void load();
+    status_code load();
 
 public:
     // 返回数据库元数据JSON文件的存储路径
@@ -41,22 +44,21 @@ public:
     // 以JSON类的格式返回数据库元数据的引用
     const json &get_database_meta();
 
-    // 对数据库元数据的一切操作都应该由该类完成，因此不再使用set
+    // 为了功能解耦的严格性，对数据库元数据的一切操作都应该由该类完成，因此不再使用set
     // void set_database_meta_information(const json &database_meta);
 
     // 传入数据库元数据JSON文件的路径，通过load获取到元数据
-    DatabaseMetaHandler(const string &database_meta_path);
+    // 若所给路径不存在文件，则创建
+    DatabaseMetaHandler(const string &database_meta_dir);
 
     // 传入数据库元数据JSON文件路径和元数据，直接赋值
-    DatabaseMetaHandler(const string &database_meta_path, json &database_meta);
+    DatabaseMetaHandler(const string &database_meta_dir, json &database_meta);
 
     // 覆盖原来文件保存
-    // 当文件保存失败时，抛出异常
-    void save();
+    status_code save();
 
     // 另存为其他路径下的文件
-    // 当文件保存失败时，抛出异常
-    void save(const string &database_meta_path);
+    status_code save(const string &database_meta_path);
 
     // 在元数据中加入一个数据库，并返回状态码
     // 在使用save()函数保存之间，数据不会被存储到磁盘中

@@ -1,20 +1,26 @@
 #include "database_meta_handler.h"
 
-DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_path, json &database_meta)
+DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir, json &database_meta)
 {
-    // TODO：path检查（路径是否合法）
-    // 如果不合法直接抛出异常，因为此处路径不由用户决定，如果出现异常一定是代码的问题
-    
-    database_meta_path_ = database_meta_path;
+    // 文件夹不存在，则创建
+    if (!access(database_meta_dir.c_str(), 0) == 0)
+    {
+        mkdir(database_meta_dir.c_str(), S_IRWXU);
+    }
+
+    database_meta_path_ = database_meta_dir + "/db_meta.json";
     database_meta_ = database_meta;
 }
 
-DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_path)
+DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir)
 {
-    // TODO：path检查（路径是否合法、是否真的有文件）
-    // 如果不合法直接抛出异常，因为此处路径不由用户决定，如果出现异常一定是代码的问题
-    // 如果是不存在就创建一个
-    database_meta_path_ = database_meta_path;
+    // 文件夹不存在，则创建
+    if (!access(database_meta_dir.c_str(), 0) == 0)
+    {
+        mkdir(database_meta_dir.c_str(), S_IRWXU);
+    }
+
+    database_meta_path_ = database_meta_dir + "/db_meta.json";
     load();
 }
 
@@ -29,60 +35,65 @@ const json &DatabaseMetaHandler::get_database_meta()
 }
 
 // 使用传入的路径保存meta，即“另存为”
-void DatabaseMetaHandler::save(const string &database_meta_path)
+status_code DatabaseMetaHandler::save(const string &database_meta_path)
 {
     // TODO：检查数据库名、meta信息、路径是否非空
 
-    status_code error;
     DataFileHandler file;
 
-    error = file.open(database_meta_path, 1, 0, 1, 0);
-    if (error)
-        raise_exception(error);
-
-    error = file.append(database_meta_.dump());
-    if (error)
-        raise_exception(error);
+    file.open(database_meta_path, 1, 0, 1, 0);
+    return file.append(database_meta_.dump());
 }
 
 // 使用内置的成员变量存储（覆盖原文件数据）
-void DatabaseMetaHandler::save()
+status_code DatabaseMetaHandler::save()
 {
     // TODO：检查数据库名、meta信息、路径是否非空
-
-    status_code error;
     DataFileHandler file;
 
-    error = file.open(database_meta_path_, 1, 0, 1, 0);
-    if (error)
-        raise_exception(error);
-
-    error = file.append(database_meta_.dump());
-    if (error)
-        raise_exception(error);
+    file.open(database_meta_path_, 1, 0, 1, 0);
+    return file.append(database_meta_.dump());
 }
 
-void DatabaseMetaHandler::load()
+status_code DatabaseMetaHandler::load()
 {
     DataFileHandler file;
 
-    // 构造函数中的路径检查会保证这个表路径是合法的
-    status_code error = file.open(database_meta_path_, 0, 0, 0, 1);
+    // 数据库头文件不存在则创建
+    if (!file.file_exist(database_meta_path_))
+    {
+        // 创建文件
+        status_code err = file.open(database_meta_path_);
 
-    if (error)
-        raise_exception(error);
+        if (err)
+            return err;
+
+        // 写入空JSON
+        file.append("{}");
+
+        // 空JSON赋值
+        database_meta_ = json::object();
+
+        return error_code::SUCCESS;
+    }
+
+    // 以读取的模式打开
+    status_code err = file.open(database_meta_path_, 0, 0, 0, 1);
+
+    if (err)
+        return err;
 
     respond<string> json_string = file.read_all();
+    err = json_string.second;
 
-    // 返回非空字符串则状态为SUCCESS
-    if (!json_string.first.empty())
+    if (err)
     {
-        // TODO：应该多一步JSON合法性检查
-        database_meta_ = json::parse(json_string);
+        return err;
     }
     else
     {
-        raise_exception(json_string.second);
+        database_meta_.parse(json_string.first);
+        return error_code::SUCCESS;
     }
 }
 
