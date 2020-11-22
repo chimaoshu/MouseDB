@@ -64,7 +64,7 @@ public:
     status_code append(const string &string_to_write);
 
     // 在文件末尾追加二进制数据
-    status_code append(void* buffer);
+    status_code append(void *buffer, int buffer_size);
 
     // 读取一行字符串，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
