@@ -40,6 +40,9 @@ public:
     // 当用户打开了程序，即读取数据库信息
     UserAction();
 
+    // 显示调试信息
+    void print_debug_info();
+
     // 显示所有数据库名
     void show_database_names();
 
