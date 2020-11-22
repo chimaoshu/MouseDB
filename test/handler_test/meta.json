@@ -1,0 +1,22 @@
+{
+    "table_name": "表名",
+    "primary_key": [
+        {
+            "name": "foo",
+            "type": "int",
+            "length":-8 
+        }
+    ],
+    "other_keys": [ 
+        {
+            "name": "bar",
+            "type": "int",
+            "length":8 
+        },
+        {
+            "name": "barz",
+            "type": "int",
+            "length":16
+        }
+    ]
+}
