@@ -81,7 +81,7 @@ status_code DataFileHandler::append(const string &string_to_write)
 }
 
 // 文件尾追加二进制数据
-status_code DataFileHandler::append(void *buffer)
+status_code DataFileHandler::append(void *buffer, int buffer_size)
 {
     if (!writable_)
         return error_code::ERROR_NOT_APPENDABLE;
@@ -89,7 +89,7 @@ status_code DataFileHandler::append(void *buffer)
     if (!appendable_)
         file_.seekp(0, ios::end);
 
-    file_.write((char*)buffer, sizeof(buffer));
+    file_.write((char*)buffer, buffer_size);
     
     return error_code::SUCCESS;
 }
