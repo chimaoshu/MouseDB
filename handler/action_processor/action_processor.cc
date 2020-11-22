@@ -6,6 +6,20 @@ UserAction::UserAction()
 {
 }
 
+void UserAction::print_debug_info()
+{
+    cout << "\n=========================debug_info============================\n";
+    cout << "current_dir_name: " << current_dir_name_ << '\n';
+    cout << "db_meta_dir: " << db_meta_dir_ << '\n';
+    cout << "\n===============database_meta==================\n";
+    cout << db_meta_handler_.get_database_meta() << '\n';
+    cout << "\n===============database_meta==================\n";
+    
+    // TODO    
+    
+    cout << "\n=========================debug_info============================\n";
+}
+
 void UserAction::show_database_names()
 {
     list<string> database_names = db_handler_.get_all_database_name();
@@ -18,7 +32,7 @@ void UserAction::show_database_names()
 
     for (auto it = database_names.begin(); it != database_names.end(); it++)
     {
-        cout << *it << ' ';
+        cout << "database names:" << *it << ' ';
     }
     cout << '\n';
 }
@@ -55,8 +69,8 @@ void UserAction::use_a_database(const string &database_name)
         }
         else
         {
-            current_used_database_ = map_of_table_name_to_table_handler_[database_name];
             map_of_table_name_to_table_handler_[database_name] = table_handler;
+            current_used_database_ = map_of_table_name_to_table_handler_[database_name];
         }
     }
 }
@@ -109,9 +123,11 @@ void UserAction::drop_a_table(const string &table_name)
 
 void UserAction::append(const string &table_name, json &rows_info)
 {
+    string database_path = current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb";
+
     // 打开table_row_handler
     TableRowHandler table_row_handler(
-        current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb",
+        database_path,
         current_used_database_->get_table_meta_handler(table_name));
 
     // 写入数据
