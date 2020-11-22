@@ -21,7 +21,7 @@ string TableHandler::get_table_dir(const string &table_name)
     // 通过JSON获取
     auto it = database_meta_[database_name_].find(table_name);
     if (it != database_meta_[database_name_].end())
-        return it.key();
+        return it.value();
     else
         return "";
 }
@@ -32,7 +32,7 @@ status_code TableHandler::create(const string &table_directory, const string &ta
     // check(table_directory);
 
     // 创建表文件
-    string table_path = table_directory + table_name + ".mdb";
+    string table_path = table_directory + '/' + table_name + ".mdb";
     DataFileHandler table;
     table.open(table_path, 1, 0, 0, 0);
 
@@ -41,7 +41,7 @@ status_code TableHandler::create(const string &table_directory, const string &ta
     db_mete_handler.save();
 
     // 保存表头JSON到磁盘，并返回状态码
-    string table_meta_path = table_directory + table_name + ".json";
+    string table_meta_path = table_directory + '/' + table_name + ".json";
     map_of_name_and_table_meta_handler_[table_name] = new TableMetaHandler(table_meta_path, table_meta);
     return map_of_name_and_table_meta_handler_[table_name]->save();
 }

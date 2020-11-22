@@ -11,10 +11,12 @@ DatabaseHandler::DatabaseHandler(DatabaseMetaHandler &database_meta_handler, str
 
 status_code DatabaseHandler::create(const string &database_name)
 {
-    if (!access(database_meta_dir_.c_str(), 0) == 0)
-        mkdir((database_meta_dir_ + '/' + database_name).c_str(), S_IRWXU);
+    string database_dir = database_meta_dir_ + '/' + database_name;
+    if (!access(database_dir.c_str(), 0) == 0)
+        mkdir(database_dir.c_str(), S_IRWXU);
 
-    return database_meta_handler_.add_database_in_json(database_name);
+    database_meta_handler_.add_database_in_json(database_name);
+    return database_meta_handler_.save();
 }
 
 TableHandler *DatabaseHandler::open(const string &database_name)
@@ -53,7 +55,8 @@ status_code DatabaseHandler::drop(const string &database_name)
         }
 
         // 删除JSON中的数据库并返回错误码
-        return database_meta_handler_.delete_database_in_json(database_name);
+        database_meta_handler_.delete_database_in_json(database_name);
+        return database_meta_handler_.save();
     }
 }
 
@@ -62,7 +65,7 @@ list<string> DatabaseHandler::get_all_database_name()
     list<string> all_database_name;
     for (auto it = database_meta_.begin(); it != database_meta_.end(); it++)
     {
-        all_database_name.push_back(*it);
+        all_database_name.push_back(it.key());
     }
     return all_database_name;
 }

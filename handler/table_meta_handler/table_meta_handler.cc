@@ -68,7 +68,7 @@ status_code TableMetaHandler::load()
 uint16_t TableMetaHandler::get_line_size()
 {
     // 若已有缓存，直接返回
-    if (line_size_)
+    if (!off_set_of_each_column_.empty())
         return line_size_;
 
     set_column_info_and_line_size();
@@ -158,7 +158,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
     9:float
     10:double
     -123:char（负数表示char，数值表示char的长度）（其实char的长度也可以通过前后偏移相减得到）*/
-    for (auto it = primary_keys.begin(); it != primary_keys.end(); it++, i++)
+    for (auto it = primary_keys.begin(); it != primary_keys.end(); it++)
     {
         // 寻找key_type
         auto type_it = it->find("type");
@@ -173,17 +173,74 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         {
             // 字节数
             size_of_var = (*it)["length"];
-            size_of_var = size_of_var / 8;
 
             // 转为正数（由于json中存储时用负号表示signed int）
             if (size_of_var < 0)
             {
-                size_of_var = -size_of_var;
-                type_of_each_column_[i - 1] = size_of_var;
+                type_of_each_column_[i - 1] = size_of_var / -8;
             }
             else // 正号表示unsigned
             {
-                type_of_each_column_[i - 1] = size_of_var + 4;
+                type_of_each_column_[i - 1] = size_of_var / 8 + 4;
+            }
+        }
+        else if (key_type == "char")
+        {
+            size_of_var = (*it)["length"];
+
+            // 负号表示char，数值表示长度
+            type_of_each_column_[i - 1] = -size_of_var;
+        }
+        else if (key_type == "float")
+        {
+            size_of_var = sizeof(float);
+            type_of_each_column_[i - 1] = 9;
+        }
+        else if (key_type == "double")
+        {
+            size_of_var = sizeof(double);
+            type_of_each_column_[i - 1] = 10;
+        }
+        else
+        {
+            return error_code::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+        }
+
+        // 设置从列名到列序号的映射，列序号从1开始
+        map_of_column_name_to_column_order_[(*it)["name"]] = i - 1;
+
+        // 加上当前key的类型对应的size
+        line_size_ += size_of_var > 0 ? size_of_var:-size_of_var;
+
+        // 第i个元素的地址偏移就等于前i-1个元素的size之和
+        off_set_of_each_column_[i] = line_size_;
+        i++;
+    }
+
+    for (auto it = other_keys.begin(); it != other_keys.end(); it++)
+    {
+        // 寻找key_type
+        auto type_it = it->find("type");
+        if (type_it == it->end())
+        {
+            return error_code::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+        }
+
+        // key的数据种类
+        string key_type = *type_it;
+        if (key_type == "int")
+        {
+            // 字节数
+            size_of_var = (*it)["length"];
+
+            // 转为正数（由于json中存储时用负号表示signed int）
+            if (size_of_var < 0)
+            {
+                type_of_each_column_[i - 1] = size_of_var / -8;
+            }
+            else // 正号表示unsigned
+            {
+                type_of_each_column_[i - 1] = size_of_var / 8 + 4;
             }
         }
         else if (key_type == "char")
@@ -209,13 +266,15 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         }
 
         // 设置从列名到列序号的映射
-        map_of_column_name_to_column_order_[(*it)["name"]] = type_of_each_column_[i - 1];
+        map_of_column_name_to_column_order_[(*it)["name"]] = i - 1;
 
         // 加上当前key的类型对应的size
-        line_size_ += size_of_var;
+        line_size_ += size_of_var > 0 ? size_of_var:-size_of_var;
 
         // 第i个元素的地址偏移就等于前i-1个元素的size之和
-        off_set_of_each_column_[i] = size_of_var;
+        off_set_of_each_column_[i] = line_size_;
+        i++;
     }
+
     return error_code::SUCCESS;
 }

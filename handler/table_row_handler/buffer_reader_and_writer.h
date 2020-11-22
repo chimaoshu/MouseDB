@@ -75,28 +75,30 @@ inline void read_buffer<0>(const int &type_id, void *&initial_address, nlohmann:
     }
 }
 
+// template inline void read_buffer<10>(const int &type_id, void *&initial_address, nlohmann::json &container);
+
 // 传入：种类ID、初始写入地址、JSON迭代器（对应列的元素）
 template <int N>
-inline void write_buffer(const int type_id, void *initial_address, json row, int index)
+inline void write_buffer(const int &type_id, void *&initial_address, nlohmann::detail::iter_impl<const nlohmann::json> &it)
 {
     if (type_id == N)
     {
-        BufferType<N> temp = row[index];
+        BufferType<N> temp = *it;
         *(BufferType<N> *)initial_address = temp;
     }
     else
     {
-        write_buffer<N - 1>(type_id, initial_address, row, index);
+        write_buffer<N - 1>(type_id, initial_address, it);
     }
 }
 
 template <>
-inline void write_buffer<0>(const int type_id, void *initial_address, json row, int index)
+inline void write_buffer<0>(const int &type_id, void *&initial_address, nlohmann::detail::iter_impl<const nlohmann::json> &it)
 {
     // char型
     if (type_id < 0)
     {
-        std::string temp = row[index];
+        std::string temp = *it;
 
         // 一个一个字节写入
         int off_set_size = 0;

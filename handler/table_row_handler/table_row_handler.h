@@ -1,6 +1,9 @@
 #ifndef MOUSEDB_HANDLER_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_
 #define MOUSEDB_HANDLER_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_
 
+// for debug
+#include <iostream>
+
 #include "lib/Json/single_include/nlohmann/json.hpp"
 
 #include "handler/table_meta_handler/table_meta_handler.h"
@@ -14,10 +17,11 @@ class TableRowHandler
 private:
     DataFileHandler file_;
 
-    const string &table_name_;
+    // 这里不能用引用，我不知道为什么，引用会赋值失败s
+    const string table_name_;
 
-    // 对TableMetaHandler成员的引用
-    const uint16_t &line_size_;
+    // 这里不能用引用，我不知道为什么，莫名其妙会改变，怀疑是内存覆盖
+    const uint16_t line_size_;
 
     // 对TableMetaHandler成员指针的引用
     const vector<uint16_t> &off_set_of_each_column_;
@@ -48,7 +52,7 @@ public:
     // 调试用JSON、使用换Vector
     // 读取完需要释放内存
     template <class T>
-    T *read(uint64_t &off_set, uint64_t &line_number, list<int> &wanted_columns);
+    T *read(uint64_t &off_set, uint64_t &line_number, list<int> wanted_columns);
 
     // 返回状态码
     // 在表末尾追加一行或多行数据，传入的JSON格式同上（内层JSON，外层是JSON或Vector）
