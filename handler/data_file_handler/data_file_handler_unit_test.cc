@@ -49,7 +49,9 @@ public:
     {
         DataFileHandler a;
         a.open("./test/test2.json", 0, 0, 0, 1);
-        void *p = a.read_lines_into_buffer(0, 2, 5);
+        auto res = a.read_lines_into_buffer(0, 2, 5);
+        void *p = res.first;
+        int available_lines = res.second;
         cout << (char*)p << endl;
     }
 };

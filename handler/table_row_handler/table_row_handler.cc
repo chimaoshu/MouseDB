@@ -14,11 +14,15 @@ TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&tab
 template <class T>
 T *TableRowHandler::read(uint64_t &off_set, uint64_t &line_number, list<int> wanted_columns)
 {
-    void *buffer_pointer = file_.read_lines_into_buffer(off_set * line_size_, line_size_, line_number);
+    pair<void *, uint64_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_, line_size_, line_number);
+
     T *rows = new T;
 
+    void *buffer_pointer = buffer_info.first;
+    uint64_t available_lines = buffer_info.second;
+
     // 解析buffer
-    for (int i = 0; i < line_number; i++)
+    for (int i = 0; i < available_lines; i++)
     {
         // 存储一行数据
         json row;
@@ -36,6 +40,12 @@ T *TableRowHandler::read(uint64_t &off_set, uint64_t &line_number, list<int> wan
         }
         rows->push_back(row);
     }
+
+    if (buffer_pointer)
+    {
+        delete[](char *) buffer_pointer;
+    }
+
     return rows;
 }
 
@@ -47,7 +57,7 @@ status_code TableRowHandler::write(const T &rows_information)
 
     // 需要写入的数据所占的内存
     int buffer_size = line_size_ * rows_number;
-    
+
     void *buffer = new char[buffer_size];
 
     if (!buffer)
@@ -79,7 +89,10 @@ status_code TableRowHandler::write(const T &rows_information)
 
     status_code code = file_.append(buffer, buffer_size);
 
-    delete[] (char *)buffer;
+    if (buffer)
+    {
+        delete[](char *) buffer;
+    }
 
     return code;
 }

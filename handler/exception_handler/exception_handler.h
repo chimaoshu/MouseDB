@@ -49,6 +49,8 @@ namespace error_code
     // 用户操作
     const status_code ERROR_TABLE_NOT_OPENED = 12;
 
+    // 查询
+    const status_code ERROR_OFFSET_EXCEEDS_THE_MAXIMUM = 13;
 
 } // namespace error_code
 

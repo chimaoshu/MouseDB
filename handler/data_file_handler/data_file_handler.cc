@@ -12,12 +12,17 @@ DataFileHandler::~DataFileHandler()
         file_.close();
 }
 
+void DataFileHandler::close()
+{
+    if (file_.is_open())
+        file_.close();
+}
+
 string DataFileHandler::get_path() { return path_; }
 
 status_code DataFileHandler::open(const string &file_path, bool write, bool append, bool truncate, bool read)
 {
-    // 先根据传入参数设置open_mode，然后打开
-
+    // 根据传入参数设置open_mode
     ios::open_mode open_mode_of_file = ios::binary;
 
     if (write)
@@ -25,7 +30,7 @@ status_code DataFileHandler::open(const string &file_path, bool write, bool appe
         // 可写
         open_mode_of_file |= ios::out;
 
-        // 追加模式
+        // 追加
         if (append)
             open_mode_of_file |= ios::app;
 
@@ -89,11 +94,12 @@ status_code DataFileHandler::append(void *buffer, int buffer_size)
     if (!appendable_)
         file_.seekp(0, ios::end);
 
-    file_.write((char*)buffer, buffer_size);
-    
+    file_.write((char *)buffer, buffer_size);
+
     return error_code::SUCCESS;
 }
 
+// 读字符串
 respond<string> DataFileHandler::read_line()
 {
     if (writable_ && !readable_)
@@ -105,6 +111,7 @@ respond<string> DataFileHandler::read_line()
     return respond<string>(next_line, error_code::SUCCESS);
 }
 
+// 读字符串
 respond<string> DataFileHandler::read_all()
 {
     if (writable_ && !readable_)
@@ -124,28 +131,55 @@ respond<string> DataFileHandler::read_all()
     if (!char_file_content)
         return respond<string>("", error_code::ERROR_MEMORY_ALLOCATION_FAIL);
 
-
     file_.read(char_file_content, buffer_length);
 
     string file_content = char_file_content;
 
-    delete []char_file_content;
+    delete[] char_file_content;
 
     return respond<string>(file_content, error_code::SUCCESS);
 }
 
-// 把lines读进缓存中，返回指向缓存的指针
+// 把lines读进缓存中，返回指向缓存的指针与可用的行数（防止越界）
 // 若创建内存失败，返回空指针
-void *DataFileHandler::read_lines_into_buffer(const int &initial_adress, const int &line_size, const int &line_number)
+pair<void *, uint64_t> DataFileHandler::read_lines_into_buffer(
+    const int &initial_adress,
+    const int &line_size,
+    const int &line_number)
 {
-    file_.seekg(initial_adress);
+    file_.seekg(0, ios::end);
+    uint64_t file_size = file_.tellg();
+
+    if (initial_adress > file_size)
+    {
+        return pair<void *, int>(NULL, 0);
+    }
+
+    uint64_t available_lines;
+
+    // 计算可读行数目
+    if (initial_adress + line_size * line_number > file_size)
+    {
+        available_lines = (file_size - initial_adress) / line_size;
+    }
+    else
+    {
+        available_lines = line_size;
+    }
+    uint64_t buffer_size = available_lines * line_size;
 
     // 分配内存
-    void *p = new char[line_size * line_number];
+    void *p = new char[buffer_size];
 
     if (!p)
-        return p;
+    {
+        cout << "memory allocation failed while reading file" << endl;
+        return pair<void *, int>(NULL, 0);
+    }
 
+    file_.seekg(initial_adress);
     file_.read((char *)p, line_size * line_number);
-    return p;
+
+    return pair<void *, int>(p, available_lines);
+    ;
 }
