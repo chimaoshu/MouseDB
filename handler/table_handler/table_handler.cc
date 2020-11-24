@@ -51,10 +51,13 @@ status_code TableHandler::drop_table(const string &table_name, DatabaseMetaHandl
     string table_dir = get_table_dir(table_name);
 
     // 先删除二进制文件
-    remove((table_dir + table_name + ".mdb").c_str());
+    remove((table_dir + '/' + table_name + ".mdb").c_str());
 
     // 然后删除表头
-    remove((table_dir + table_name + ".json").c_str());
+    remove((table_dir + '/' + table_name + ".json").c_str());
+
+    // 删除文件夹
+    remove(table_dir.c_str());
 
     // 调用DatabaseMetaHandler来抹去JSON上该表数据
     status_code error = db_mete_handler.delete_table_in_json(database_name_, table_name);

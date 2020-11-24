@@ -154,7 +154,7 @@ status_code DatabaseMetaHandler::delete_table_in_json(const string &database_nam
     }
     else
     {
-        database_meta_.erase(it);
+        database_meta_[database_name].erase(it);
         return error_code::SUCCESS;
     }
 }

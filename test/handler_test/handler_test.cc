@@ -31,14 +31,6 @@ void run()
     // 打开数据库
     ua.use_a_database("foo");
 
-    /*
-    以你自己的设计思路，在接下来的几行中创建一个属于上述数据库的表：
-    表包含三列的信息：
-    第一列表示学号：int order
-    第二列表示班级：int class
-    第三列表示分数：int score
-    */
-
     // 也许你会对相对路径感到混乱，那么请在这里填上四个json所在的文件夹
     string path = "/home/chenjingwei/workspace/MouseDB/test/handler_test/";
 
@@ -168,6 +160,8 @@ void run()
     // cout << (&row1.read(100, 56)) << endl;
 
     // system("pause");
+    ua.drop_a_table("student");
+    ua.drop_a_database("foo");
 }
 
 int main()
