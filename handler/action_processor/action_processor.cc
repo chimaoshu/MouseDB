@@ -149,15 +149,15 @@ void UserAction::query(
                                          ->get_table_meta_handler(table_name)
                                          ->get_column_orders_by_names(wanted_column_names);
 
-    if (debug_mode)
+    if (!debug_mode)
     {
         vector<json> *outcome = table_row_handler.read<vector<json>>(off_set, line_number, wanted_column_orders);
         cout << *outcome << endl;
+        // 后续其他操作
         delete outcome;
     }
     else
     {
-        // 后续其他操作
         json *outcome = table_row_handler.read<json>(off_set, line_number, wanted_column_orders);
         cout << *outcome << endl;
         delete outcome;
