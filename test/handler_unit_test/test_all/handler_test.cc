@@ -32,7 +32,8 @@ void run()
     ua.use_a_database("foo");
 
     // 也许你会对相对路径感到混乱，那么请在这里填上四个json所在的文件夹
-    string path = "/home/chenjingwei/workspace/MouseDB/test/handler_test/";
+    string path = get_current_dir_name();
+    path += "/test/handler_unit_test/test_all/";
 
     ifstream i1(path + "meta.json");
     json meta;

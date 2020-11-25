@@ -18,13 +18,13 @@ TRH = table_row_handler
 
 # clean
 
-clean_data_file_handler:
+clean_DFH:
 	rm $(TEST_DIR)/$(DFH)_unit_test $(TEST_DIR)/$(DFH)_unit_test.o $(TEST_DIR)/$(DFH).o
 
-clean_table_meta_handler:
+clean_TMH:
 	rm $(TEST_DIR)/$(TMH)_unit_test $(TEST_DIR)/$(TMH)_unit_test.o $(TEST_DIR)/$(TMH).o
 
-clean_table_handler:
+clean_TH:
 	rm $(TEST_DIR)/$(TH)_unit_test $(TEST_DIR)/$(TH)_unit_test.o $(TEST_DIR)/$(TH).o
 
 clean:
@@ -111,7 +111,7 @@ $(TEST_DIR)/$(AP).o: $(SOURCE_DIR)/$(AP)/$(AP).cc
 handler_test: $(TEST_DIR)/handler_test.o $(TEST_DIR)/$(TRH).o $(TEST_DIR)/$(AP).o $(TEST_DIR)/$(DH).o $(TEST_DIR)/$(DMH).o $(TEST_DIR)/$(TH).o $(TEST_DIR)/$(TMH).o $(TEST_DIR)/$(DFH).o $(TEST_DIR)/$(EH).o
 	$(CC) $(LFLAGS) $^ -$(DBG_TYPE) -o $(TEST_DIR)/$@ -std=c++11
 
-$(TEST_DIR)/handler_test.o: test/handler_test/handler_test.cc
+$(TEST_DIR)/handler_test.o: test/handler_unit_test/test_all/handler_test.cc
 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
 # proto_test
