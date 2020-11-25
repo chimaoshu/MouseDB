@@ -18,6 +18,9 @@ TRH = table_row_handler
 
 # clean
 
+clean:
+	rm $(TEST_DIR)/*
+
 clean_DFH:
 	rm $(TEST_DIR)/$(DFH)_unit_test $(TEST_DIR)/$(DFH)_unit_test.o $(TEST_DIR)/$(DFH).o
 
@@ -27,8 +30,14 @@ clean_TMH:
 clean_TH:
 	rm $(TEST_DIR)/$(TH)_unit_test $(TEST_DIR)/$(TH)_unit_test.o $(TEST_DIR)/$(TH).o
 
-clean:
-	rm $(TEST_DIR)/*
+clean_DMH:
+	rm $(TEST_DIR)/$(DMH)_unit_test $(TEST_DIR)/$(DMH)_unit_test.o $(TEST_DIR)/$(DMH).o
+
+clean_DH:
+	rm $(TEST_DIR)/$(DH)_unit_test $(TEST_DIR)/$(DH)_unit_test.o $(TEST_DIR)/$(DH).o
+
+clean_AP:
+	rm $(TEST_DIR)/$(AP)_unit_test $(TEST_DIR)/$(AP)_unit_test.o $(TEST_DIR)/$(AP).o
 
 
 # exception_handler
