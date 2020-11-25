@@ -23,61 +23,17 @@
 -123:char（负数表示char，数值表示char的长度）
 */
 
-template <int N>
-struct BufferTypeMap
-{
-    using Type = char;
-};
-template <>
-struct BufferTypeMap<1>
-{
-    using Type = int8_t;
-};
-template <>
-struct BufferTypeMap<2>
-{
-    using Type = int16_t;
-};
-template <>
-struct BufferTypeMap<3>
-{
-    using Type = int32_t;
-};
-template <>
-struct BufferTypeMap<4>
-{
-    using Type = int64_t;
-};
-template <>
-struct BufferTypeMap<5>
-{
-    using Type = uint8_t;
-};
-template <>
-struct BufferTypeMap<6>
-{
-    using Type = uint16_t;
-};
-template <>
-struct BufferTypeMap<7>
-{
-    using Type = uint32_t;
-};
-template <>
-struct BufferTypeMap<8>
-{
-    using Type = uint64_t;
-};
-template <>
-struct BufferTypeMap<9>
-{
-    using Type = float;
-};
-template <>
-struct BufferTypeMap<10>
-{
-    using Type = double;
-};
+template <int N> struct BufferTypeMap{ using Type = char; };
+template <> struct BufferTypeMap<1>{ using Type = int8_t; };
+template <> struct BufferTypeMap<2>{ using Type = int16_t; };
+template <> struct BufferTypeMap<3>{ using Type = int32_t; };
+template <> struct BufferTypeMap<4>{ using Type = int64_t; };
+template <> struct BufferTypeMap<5>{ using Type = uint8_t; };
+template <> struct BufferTypeMap<6>{ using Type = uint16_t; };
+template <> struct BufferTypeMap<7>{ using Type = uint32_t; };
+template <> struct BufferTypeMap<8>{ using Type = uint64_t; };
+template <> struct BufferTypeMap<9>{ using Type = float; };
+template <> struct BufferTypeMap<10>{ using Type = double; };
 
 template <int N>
 using BufferType = typename BufferTypeMap<N>::Type;
