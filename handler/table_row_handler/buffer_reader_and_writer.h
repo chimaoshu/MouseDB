@@ -23,17 +23,61 @@
 -123:char（负数表示char，数值表示char的长度）
 */
 
-template <int N> struct BufferTypeMap{ using Type = char; };
-template <> struct BufferTypeMap<1>{ using Type = int8_t; };
-template <> struct BufferTypeMap<2>{ using Type = int16_t; };
-template <> struct BufferTypeMap<3>{ using Type = int32_t; };
-template <> struct BufferTypeMap<4>{ using Type = int64_t; };
-template <> struct BufferTypeMap<5>{ using Type = uint8_t; };
-template <> struct BufferTypeMap<6>{ using Type = uint16_t; };
-template <> struct BufferTypeMap<7>{ using Type = uint32_t; };
-template <> struct BufferTypeMap<8>{ using Type = uint64_t; };
-template <> struct BufferTypeMap<9>{ using Type = float; };
-template <> struct BufferTypeMap<10>{ using Type = double; };
+template <int N>
+struct BufferTypeMap
+{
+    using Type = char;
+};
+template <>
+struct BufferTypeMap<1>
+{
+    using Type = int8_t;
+};
+template <>
+struct BufferTypeMap<2>
+{
+    using Type = int16_t;
+};
+template <>
+struct BufferTypeMap<3>
+{
+    using Type = int32_t;
+};
+template <>
+struct BufferTypeMap<4>
+{
+    using Type = int64_t;
+};
+template <>
+struct BufferTypeMap<5>
+{
+    using Type = uint8_t;
+};
+template <>
+struct BufferTypeMap<6>
+{
+    using Type = uint16_t;
+};
+template <>
+struct BufferTypeMap<7>
+{
+    using Type = uint32_t;
+};
+template <>
+struct BufferTypeMap<8>
+{
+    using Type = uint64_t;
+};
+template <>
+struct BufferTypeMap<9>
+{
+    using Type = float;
+};
+template <>
+struct BufferTypeMap<10>
+{
+    using Type = double;
+};
 
 template <int N>
 using BufferType = typename BufferTypeMap<N>::Type;
@@ -55,24 +99,16 @@ inline void read_buffer(const int &type_id, void *&initial_address, nlohmann::js
 template <>
 inline void read_buffer<0>(const int &type_id, void *&initial_address, nlohmann::json &container)
 {
-    // char型
-    if (type_id < 0)
-    {
-        std::string s;
-        int lenght_of_char = -type_id;
+    std::string s;
+    int lenght_of_char = -type_id;
 
-        // 一个字节一个字节读出
-        for (int i = 0; i < lenght_of_char; i++)
-        {
-            s.push_back(*(char *)(initial_address) + i);
-        }
-
-        container.push_back(s);
-    }
-    else
+    // 一个字节一个字节读出
+    for (int i = 0; i < lenght_of_char; i++)
     {
-        // 传入的参数错了
+        s.push_back(*(char *)(initial_address) + i);
     }
+
+    container.push_back(s);
 }
 
 // template inline void read_buffer<10>(const int &type_id, void *&initial_address, nlohmann::json &container);
@@ -95,21 +131,13 @@ inline void write_buffer(const int &type_id, void *&initial_address, nlohmann::d
 template <>
 inline void write_buffer<0>(const int &type_id, void *&initial_address, nlohmann::detail::iter_impl<const nlohmann::json> &it)
 {
-    // char型
-    if (type_id < 0)
-    {
-        std::string temp = *it;
+    std::string temp = *it;
 
-        // 一个一个字节写入
-        int off_set_size = 0;
-        for (auto it = temp.begin(); it < temp.end(); it++, off_set_size++)
-        {
-            *((char *)(initial_address) + off_set_size) = *it;
-        }
-    }
-    else
+    // 一个一个字节写入
+    int off_set_size = 0;
+    for (auto it = temp.begin(); it < temp.end(); it++, off_set_size++)
     {
-        // 传入的参数错了
+        *((char *)(initial_address) + off_set_size) = *it;
     }
 }
 
