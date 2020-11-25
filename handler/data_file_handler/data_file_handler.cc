@@ -145,7 +145,7 @@ respond<string> DataFileHandler::read_all()
 pair<void *, uint64_t> DataFileHandler::read_lines_into_buffer(
     const int &initial_adress,
     const int &line_size,
-    const int &line_number)
+    const int &number_of_line)
 {
     file_.seekg(0, ios::end);
     uint64_t file_size = file_.tellg();
@@ -158,7 +158,7 @@ pair<void *, uint64_t> DataFileHandler::read_lines_into_buffer(
     uint64_t available_lines;
 
     // 计算可读行数目
-    if (initial_adress + line_size * line_number > file_size)
+    if (initial_adress + line_size * number_of_line > file_size)
     {
         available_lines = (file_size - initial_adress) / line_size;
     }
@@ -178,7 +178,7 @@ pair<void *, uint64_t> DataFileHandler::read_lines_into_buffer(
     }
 
     file_.seekg(initial_adress);
-    file_.read((char *)p, line_size * line_number);
+    file_.read((char *)p, line_size * number_of_line);
 
     return pair<void *, int>(p, available_lines);
     ;

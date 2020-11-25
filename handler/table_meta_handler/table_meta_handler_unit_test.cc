@@ -13,18 +13,13 @@ public:
     void test_load_and_save()
     {
         // load
-        TableMetaHandler *table = new TableMetaHandler("./test/test.json");
+        TableMetaHandler *table = new TableMetaHandler("./test/handler_unit_test/test.json");
         json j = table->get_table_meta();
 
-        j["foo"] = "bar"; 
-        string a = j.dump();
-
-        cout << a << endl;
-        table->set_table_meta_information(j);
+        cout << j << endl;
 
         // save
-        table->save("./test/test2.json"); // 如果没有前面的小圆点就会打开文件错误
-        table->save(); 
+        table->save("./test/handler_unit_test/table_meta_handler_save_test.json");
 
         return;
     }

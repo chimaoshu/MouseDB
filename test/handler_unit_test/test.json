@@ -1,0 +1,23 @@
+{
+    "foo": "bar",
+    "foo2": "bar2",
+    "other_keys": [
+        {
+            "name": "name",
+            "not_null": 0,
+            "type": "float"
+        },
+        {
+            "name": "score",
+            "not_null": 0,
+            "type": "long_int"
+        }
+    ],
+    "primary_key": {
+        "name": "order",
+        "not_null": 1,
+        "type": "int"
+    },
+    "storage_path": "二进制表文件的存储路径",
+    "table_name": "表名"
+}

@@ -15,11 +15,6 @@ const json &TableMetaHandler::get_table_meta()
     return table_meta_;
 }
 
-// TableMetaHandler::TableMetaHandler()
-// {
-//     raise_exception(error_code::SUCCESS);
-// }
-
 // 通过load读取对应路径下元数据
 TableMetaHandler::TableMetaHandler(const string &table_meta_path)
 :table_meta_path_(table_meta_path)
@@ -33,6 +28,7 @@ TableMetaHandler::TableMetaHandler(const string &table_meta_path, json &table_me
     table_meta_path_(table_meta_path)
 {}
 
+// 传入存储路径
 status_code TableMetaHandler::save(const string &table_meta_path)
 {
     DataFileHandler file;
@@ -40,6 +36,7 @@ status_code TableMetaHandler::save(const string &table_meta_path)
     return file.append(table_meta_.dump());
 }
 
+// 覆盖原文件存储
 status_code TableMetaHandler::save()
 {
     DataFileHandler file;
@@ -47,22 +44,30 @@ status_code TableMetaHandler::save()
     return file.append(table_meta_.dump()); // 返回错误码
 }
 
+// 从磁盘中读取表头信息
 status_code TableMetaHandler::load()
 {
     DataFileHandler file;
-    file.open(table_meta_path_, 0, 0, 0, 1);
+
+    // 只读
+    status_code err = file.open(table_meta_path_, 0, 0, 0, 1);
+
+    // 一般是路径错误，文件打不开
+    if (err)
+        return err;
 
     respond<string> p = file.read_all();
 
     if (!p.first.empty())
     {
-        table_meta_.parse(p.first);
+        table_meta_ = table_meta_.parse(p.first);
         return error_code::SUCCESS;
     }
     else
     {
+        // 返回错误码
         return p.second;
-    } // 返回错误码
+    } 
 }
 
 uint16_t TableMetaHandler::get_line_size()
@@ -103,8 +108,11 @@ list<int> TableMetaHandler::get_column_orders_by_names(const list<string> &colum
 
     for (auto it = column_names.begin(); it != column_names.end(); it++)
     {
-        output.push_back(map_of_column_name_to_column_order_[*it]);
+        // 加入列名对应的序号
+        output.push_back(map_from_column_name_to_column_order_[*it]);
     }
+
+    // 排序
     output.sort();
 
     return output;
@@ -132,12 +140,13 @@ status_code TableMetaHandler::set_column_info_and_line_size()
     type_of_each_column_.resize(key_number + 1);
     type_of_each_column_[0] = key_number;
 
-    if (!map_of_column_name_to_column_order_.empty())
+    // 清空
+    if (!map_from_column_name_to_column_order_.empty())
     {
-        map_of_column_name_to_column_order_.clear();
+        map_from_column_name_to_column_order_.clear();
     }
 
-    // 变量长度
+    // 变量长度（所占字节数）
     int size_of_var = 0;
 
     // 行长度
@@ -158,6 +167,8 @@ status_code TableMetaHandler::set_column_info_and_line_size()
     9:float
     10:double
     -123:char（负数表示char，数值表示char的长度）（其实char的长度也可以通过前后偏移相减得到）*/
+
+    // 先找primary keys
     for (auto it = primary_keys.begin(); it != primary_keys.end(); it++)
     {
         // 寻找key_type
@@ -207,7 +218,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         }
 
         // 设置从列名到列序号的映射，列序号从1开始
-        map_of_column_name_to_column_order_[(*it)["name"]] = i - 1;
+        map_from_column_name_to_column_order_[(*it)["name"]] = i - 1;
 
         // 加上当前key的类型对应的size
         line_size_ += size_of_var > 0 ? size_of_var:-size_of_var;
@@ -217,6 +228,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         i++;
     }
 
+    // 找other keys
     for (auto it = other_keys.begin(); it != other_keys.end(); it++)
     {
         // 寻找key_type
@@ -266,7 +278,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         }
 
         // 设置从列名到列序号的映射
-        map_of_column_name_to_column_order_[(*it)["name"]] = i - 1;
+        map_from_column_name_to_column_order_[(*it)["name"]] = i - 1;
 
         // 加上当前key的类型对应的size
         line_size_ += size_of_var > 0 ? size_of_var:-size_of_var;

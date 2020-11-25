@@ -28,7 +28,7 @@ private:
     bool appendable_;
     bool truncate_;
 
-    // 打开的文件
+    // 被打开的文件
     fstream file_;
 
 public:
@@ -41,10 +41,9 @@ public:
     // 返回文件路径
     string get_path();
 
-    
-    // 给成员变量file赋值
-    // 只要不可读，在文件不存在时，会创建文件
-    // 可读和可写同时出现，就没有创建属性
+    // 给成员变量file_赋值
+    // 若不可读，那么在文件不存在时，就会创建文件
+    // 若可读和可写同时出现，那么没有创建属性
     // truncate和append不能同时出现，否则文件会打开失败
     // write：可写，成假时只读
     // append：可写时从最后写
@@ -54,6 +53,7 @@ public:
 
     bool is_open();
 
+    // 关闭file_，但不析构，可以重新open。
     void close();
 
     // 在文件末尾追加字符串
@@ -62,16 +62,16 @@ public:
     // 在文件末尾追加二进制数据
     status_code append(void *buffer, int buffer_size);
 
-    // 读取一行字符串，返回字符串和状态码
-    // 在异常或者已读取到底的情况下，字符串为空
-    respond<string> read_line();
-
-    // 从initial_adress开始，以每行line_size的大小，读line_number行
+    // 从initial_adress开始，以每行line_size的大小，读number_of_line行
     // 返回指向内存的指针与读取到的可用行数
     pair<void *, uint64_t> read_lines_into_buffer(
         const int &initial_adress,
         const int &line_size,
-        const int &line_number);
+        const int &number_of_line);
+
+    // 读取一行字符串，返回字符串和状态码
+    // 在异常或者已读取到底的情况下，字符串为空
+    respond<string> read_line();
 
     // 读取整个文件内容，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
