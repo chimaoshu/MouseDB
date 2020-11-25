@@ -12,19 +12,10 @@ class DatabaseMetaHandlerUnitTest
 public:
     void test_load_and_save()
     {
-        // load
-        DatabaseMetaHandler *table = new DatabaseMetaHandler("./test/test.json");
+        DatabaseMetaHandler *table = new DatabaseMetaHandler("./test/handler_unit_test/database_meta_handler/test.json");
         json j = table->get_database_meta();
 
-        j["foo2"] = "bar2"; 
-        string a = j.dump();
-
-        cout << a << endl;
-        table->set_database_meta_information(j);
-
-        // save
-        table->save("./test/test2.json"); // 如果没有前面的小圆点就会打开文件错误
-        table->save(); 
+        table->save("./test/handler_unit_test/database_meta_handler/test_save.json");
 
         return;
     }

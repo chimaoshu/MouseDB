@@ -62,22 +62,18 @@ public:
 
     // 在元数据中加入一个数据库，并返回状态码
     // 在使用save()函数保存之间，数据不会被存储到磁盘中
-    // 数据库已存在时，返回ERROR_DATABASE_HAS_ALREADY_EXISTS
     status_code add_database_in_json(const string &database_name);
 
     // 在元数据中加入一个表，并返回状态码
     // 在使用save()函数保存之间，数据不会被存储到磁盘中
-    // 表已存在时，返回ERROR_TABLE_NOT_EXISTS
     status_code add_table_in_json(const string &database_name, const string &table_name, const string &table_dir);
 
     // 在元数据中删除一个数据库，并返回状态码
     // 在使用save()函数保存之间，数据不会被存储到磁盘中
-    // 数据库不存在时，返回ERROR_DATABASE_NOT_EXISTS
     status_code delete_database_in_json(const string &database_name);
 
     // 在元数据中删除一个表，并返回状态码
     // 在使用save()函数保存之间，数据不会被存储到磁盘中
-    // 表不存在时，返回ERROR_TABLE_HAS_ALREADY_EXISTS
     status_code delete_table_in_json(const string &database_name, const string &table_name);
 };
 

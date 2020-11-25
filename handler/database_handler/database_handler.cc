@@ -26,7 +26,7 @@ TableHandler *DatabaseHandler::open(const string &database_name)
     // 数据库不存在
     if (it == database_meta_.end())
     {
-        return NULL;
+        return NULL; 
     }
     else
     {
@@ -37,8 +37,9 @@ TableHandler *DatabaseHandler::open(const string &database_name)
 
 status_code DatabaseHandler::drop(const string &database_name)
 {
-    auto it = database_meta_.find(database_name);
-    if (it == database_meta_.end())
+    // 判断数据库是否存在
+    auto i = database_meta_.find(database_name);
+    if (i == database_meta_.end())
     {
         return error_code::ERROR_DATABASE_NOT_EXISTS;
     }

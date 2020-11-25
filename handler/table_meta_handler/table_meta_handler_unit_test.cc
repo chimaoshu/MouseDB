@@ -13,13 +13,13 @@ public:
     void test_load_and_save()
     {
         // load
-        TableMetaHandler *table = new TableMetaHandler("./test/handler_unit_test/test.json");
+        TableMetaHandler *table = new TableMetaHandler("./test/handler_unit_test/table_meta_handler/test.json");
         json j = table->get_table_meta();
 
         cout << j << endl;
 
         // save
-        table->save("./test/handler_unit_test/table_meta_handler_save_test.json");
+        table->save("./test/handler_unit_test/table_meta_handler/table_meta_handler_save_test.json");
 
         return;
     }

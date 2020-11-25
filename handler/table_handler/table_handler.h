@@ -20,12 +20,12 @@ using namespace std;
 using json = nlohmann::json;
 
 // 对某个数据库中表的处理，包括表的创建、打开、删除
-// TableHandler连接起了表元数据与数据库元数据库
-// 与TableMetaHandler不同的是，该类管理某个数据库中的所有表
+// TableHandler连接起了表元数据与数据库元数据
+// 与TableMetaHandler只管理一个表不同的是，该类管理某个数据库中的所有表
 // 即一个TableHandler实例将对应一个被打开的数据库
 // 用户进入一个数据库时，一个TableHandler将会被实例化
 // 该类不应该被释放，除非您确定以后不会再使用该数据库
-// 即使暂时不使用该数据库，也建议（在UserStatusHandler中？或者DBHandler中？）用一个MAP把数据库名与该实例缓存起来
+// 即使暂时不使用该数据库，也会被隐藏
 class TableHandler
 {
 private:
@@ -34,7 +34,7 @@ private:
     // 格式参考format/database_meta.jsonc
     const json &database_meta_;
 
-    // 当前打开的数据库名（由于一个该类的实例对应一个被打开的数据库）
+    // 当前打开的数据库名（一个该类的实例对应一个被打开的数据库）
     string database_name_;
 
     // 存储从表名到table_meta_handler的映射
@@ -45,11 +45,11 @@ private:
 
 public:
     // 构造函数，传入数据库元数据的JSON信息（databse_meta）
-    // 即所有数据库及其表信息
-    // 按理说实例只要知道自己所管理的数据库的信息就够了，不需要知道别的数据库的信息
-    // 但是这么做可以通过引用，可以在JSON修改（由DatabaseMetaHandler完成）时
-    // 使引用了该JSON的实例的类成员也同步得到修改
+    // database_meta是对DatabaseMetaHandler成员的引用
+    // 在DatabaseMetaHandler对JSON修改时，JSON也会同步得到修改
     TableHandler(const string database_name_, const json &database_meta);
+
+    ~TableHandler();
 
     // 获得数据库名
     const string &get_database_name();
@@ -72,7 +72,7 @@ public:
     // db_mete_handler：对数据库元数据进行操作
     status_code create(const string &table_directory, const string &table_name, json &table_meta, DatabaseMetaHandler &db_mete_handler);
 
-    // 传入表名与DatabaseMetaHandler
+    // 传入表名与DatabaseMetaHandler实例
     // 删除一个表，所做的工作包括：
     // 在database_meta中抹除该表信息并保存、在磁盘上删除对应表路径下的JSON与MDB文件
     status_code drop_table(const string &table_name, DatabaseMetaHandler &db_mete_handler);

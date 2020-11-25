@@ -10,7 +10,7 @@ public:
     void test_open()
     {
         DataFileHandler a;
-        a.open("./test/handler_unit_test/test.json", 0, 0, 0, 1);
+        a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
         respond<string> b = a.read_all();
         cout << b.first;
     }
@@ -19,14 +19,14 @@ public:
     {
         DataFileHandler a;
         // 必须是存在的文件路径
-        a.open("./test/handler_unit_test/test.json", 1, 1, 0, 0);
+        a.open("./test/handler_unit_test/data_file_handler/test.json", 1, 1, 0, 0);
         a.append("\ntest");
     }
 
     void test_read_line()
     {
         DataFileHandler a;
-        a.open("./test/handler_unit_test/test.json", 0, 0, 0, 1);
+        a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
         respond<string> b = a.read_line();
         cout << b.first << endl;
     }
@@ -34,7 +34,7 @@ public:
     void test_read_all()
     {
         DataFileHandler a;
-        a.open("./test/handler_unit_test/test.json", 0, 0, 0, 1);
+        a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
         respond<string> b = a.read_all();
         cout << b.first << endl;
     }
@@ -42,13 +42,13 @@ public:
     void test_create_file()
     {
         DataFileHandler a;
-        a.open("./test/handler_unit_test/test2.json", 1, 0, 1, 0);
+        a.open("./test/handler_unit_test/data_file_handler/test2.json", 1, 0, 1, 0);
     }
 
     void test_read_lines_into_buffer()
     {
         DataFileHandler a;
-        a.open("./test/handler_unit_test/test.json", 0, 0, 0, 1);
+        a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
         auto res = a.read_lines_into_buffer(0, 2, 5);
         void *p = res.first;
         int available_lines = res.second;
