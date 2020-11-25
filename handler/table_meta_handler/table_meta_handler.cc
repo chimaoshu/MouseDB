@@ -60,7 +60,7 @@ status_code TableMetaHandler::load()
 
     if (!p.first.empty())
     {
-        table_meta_ = table_meta_.parse(p.first);
+        table_meta_ = json::parse(p.first);
         return error_code::SUCCESS;
     }
     else

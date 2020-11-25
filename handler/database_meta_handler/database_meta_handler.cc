@@ -92,7 +92,7 @@ status_code DatabaseMetaHandler::load()
     }
     else
     {
-        database_meta_.parse(json_string.first);
+        database_meta_ = json::parse(json_string.first);
         return error_code::SUCCESS;
     }
 }
