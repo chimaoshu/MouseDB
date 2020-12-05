@@ -52,7 +52,7 @@ public:
     // 调试用JSON、使用换Vector
     // 读取完需要释放内存
     template <class T>
-    T *read(uint64_t &off_set, uint64_t &line_number, list<int> wanted_columns);
+    T *read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
 
     // 返回状态码
     // 在表末尾追加一行或多行数据，传入的JSON格式同上（内层JSON，外层是JSON或Vector）

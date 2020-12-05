@@ -2,5 +2,5 @@
 
 void raise_exception(status_code code)
 {
-    throw "error code:" + std::to_string(code);
+    throw ("error code:" + std::to_string(code));
 }

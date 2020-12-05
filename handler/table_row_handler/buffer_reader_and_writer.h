@@ -23,6 +23,11 @@
 -123:char（负数表示char，数值表示char的长度）
 */
 
+/*
+这代码早晚要被优化掉
+递归效率太低，况且这段代码会被重复调用
+*/
+
 template <int N> struct BufferTypeMap{ using Type = char; };
 template <> struct BufferTypeMap<1>{ using Type = int8_t; };
 template <> struct BufferTypeMap<2>{ using Type = int16_t; };
@@ -38,7 +43,8 @@ template <> struct BufferTypeMap<10>{ using Type = double; };
 template <int N>
 using BufferType = typename BufferTypeMap<N>::Type;
 
-// 传入：种类ID、初始写入地址、存入的容器
+// 传入：种类ID、初始写入地址、存入的容器（JSON）
+// 如果要高性能，应该用protobuf而不是json传递信息的。。。以后慢慢改吧。
 template <int N>
 inline void read_buffer(const int &type_id, void *&initial_address, nlohmann::json &container)
 {

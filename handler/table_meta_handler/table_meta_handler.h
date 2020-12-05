@@ -1,7 +1,6 @@
 #ifndef MOUSEDB_HANDLER_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 #define MOUSEDB_HANDLER_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 
-#include <stdexcept>
 #include <string>
 #include <fstream>
 #include <map>
@@ -12,10 +11,9 @@
 
 // 文件读写
 #include "handler/data_file_handler/data_file_handler.h"
+#include "handler/exception_handler/exception_handler.h"
 
 using namespace std;
-
-typedef int8_t status_code;
 
 using json = nlohmann::json;
 

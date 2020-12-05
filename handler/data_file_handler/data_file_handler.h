@@ -3,7 +3,10 @@
 
 // 用来判断文件是否存在
 #include <unistd.h>
+#include <string.h>
 
+#include <map>
+#include <list>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -31,8 +34,36 @@ private:
     // 被打开的文件
     fstream file_;
 
+    // 文件大小
+    uint64_t file_size_;
+
+    // 缓存页数的最大限制
+    uint16_t number_of_page_to_cache_;
+
+    // 以下的类成员和类方法，均和缓存有关
+
+    // 一页大小为4k
+    const int page_size_ = 4096;
+
+    // 从页码到对应内存块的映射
+    map<uint32_t, void*> pages_cache_;
+
+    // 队列，按照LRU算法，记录缓存页的页码
+    list<uint32_t> LRU_cache_list;
+
+    // 将指定页码的页读取到内存，并返回
+    void *read_page_to_memory(uint32_t page_order);
+
+    // 传入页码，返回页面缓存
+    // 如果已有缓存，则提到list最前，返回
+    // 如果没有缓存且未满，则读取到内存中，放到list最前，返回
+    // 如果没有缓存且已满，则读取到内存中，放到list最前，并挤掉最后一个，返回
+    // 只管get就是了，缓不缓存全部是它自己管理
+    void *LRU_get(uint32_t pgae_order);
+
 public:
-    DataFileHandler() = default;
+    // 缓存的页数，默认为1，不允许为0
+    DataFileHandler(uint16_t number_of_page_to_cache=1); 
     ~DataFileHandler();
 
     // 路径下的文件是否存在
@@ -64,8 +95,8 @@ public:
 
     // 从initial_adress开始，以每行line_size的大小，读number_of_line行
     // 返回指向内存的指针与读取到的可用行数
-    pair<void *, uint64_t> read_lines_into_buffer(
-        const int &initial_adress,
+    pair<void *, uint32_t> read_lines_into_buffer(
+        const uint64_t &start_position,
         const int &line_size,
         const int &number_of_line);
 

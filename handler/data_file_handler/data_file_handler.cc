@@ -6,10 +6,22 @@ bool DataFileHandler::file_exist(const string &path)
     return access(path.c_str(), 0) == 0;
 }
 
+DataFileHandler::DataFileHandler(uint16_t number_of_page_to_cache)
+{
+    number_of_page_to_cache_ = number_of_page_to_cache;
+}
+
 DataFileHandler::~DataFileHandler()
 {
     if (file_.is_open())
         file_.close();
+
+    // 删除缓存
+    for (auto it = pages_cache_.begin(); it != pages_cache_.end(); it++)
+    {
+        if (it->second)
+            delete[] (char *)(it->second);
+    }
 }
 
 void DataFileHandler::close()
@@ -49,6 +61,10 @@ status_code DataFileHandler::open(const string &file_path, bool write, bool appe
 
         if (!file_.is_open())
             return error_code::ERROR_WRONG_OPEN_MODE;
+
+        // 获取文件大小
+        file_.seekg(0, ios::end);
+        file_size_ = file_.tellg();
     }
     else // 只读模式
     {
@@ -57,6 +73,10 @@ status_code DataFileHandler::open(const string &file_path, bool write, bool appe
 
         if (!file_.is_open())
             return error_code::ERROR_FILE_NOT_EXISTS;
+
+        // 获取文件大小
+        file_.seekp(0, ios::end);
+        file_size_ = file_.tellp();
     }
 
     // 存储文件open_mode
@@ -140,46 +160,176 @@ respond<string> DataFileHandler::read_all()
     return respond<string>(file_content, error_code::SUCCESS);
 }
 
+void *DataFileHandler::read_page_to_memory(uint32_t page_order)
+{
+    // 开始读的地址
+    uint64_t start_position = (page_order - 1) * page_size_;
+
+    // 检查页码的合法性
+    if (start_position >= file_size_)
+    {
+        cout << "Warning: demanding page to cache exceeds the file size" << endl;
+        return NULL;
+    }
+
+    file_.seekg(start_position);
+
+    // 如果剩下的文件内容不够一页4k的大小
+    // （取等号意味着刚刚好够读完）
+    if (page_order * page_size_ > file_size_)
+    {
+        void *buffer = new char[file_size_ - start_position];
+        file_.read((char *)buffer, file_size_ - start_position);
+        return buffer;
+    }
+    else // 足够读
+    {
+        void *buffer = new char[file_size_];
+        file_.read((char *)buffer, file_size_);
+        return buffer;
+    }
+}
+
+void *DataFileHandler::LRU_get(uint32_t page_order)
+{
+    // 如果已经存在，则提到最前，返回
+    for (auto it = LRU_cache_list.begin(); it != LRU_cache_list.end(); it++)
+    {
+        if (*it == page_order)
+        {
+            uint32_t temp = *it;
+            LRU_cache_list.erase(it);
+            LRU_cache_list.push_front(temp);
+            return pages_cache_[temp];
+        }
+    }
+
+    // 如果不存在，则读取、放到最前、并挤掉最后一个，返回
+    void *buffer = read_page_to_memory(page_order);
+
+    // debug
+    if (!buffer)
+        raise_exception(error_code::ERROR_DEMANDING_PAGE_TO_CACHE_EXCEEDS_THE_FILE_SIZE);
+
+    // 如果已满
+    if (LRU_cache_list.size() == number_of_page_to_cache_)
+    {
+        // 找到最后一项
+        uint32_t order_of_page_to_delete = LRU_cache_list.back();
+        auto it = pages_cache_.find(order_of_page_to_delete);
+
+        // debug 如果找不到，程序一定有bug
+        if (it == pages_cache_.end())
+            raise_exception(error_code::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH);
+
+        // 淘汰掉优先级最低缓存
+        pages_cache_.erase(it);
+        LRU_cache_list.pop_back();
+    }
+
+    // 加入新的
+    pages_cache_[page_order] = buffer;
+    LRU_cache_list.push_front(page_order);
+
+    // 最后返回
+    return buffer;
+}
+
 // 把lines读进缓存中，返回指向缓存的指针与可用的行数（防止越界）
 // 若创建内存失败，返回空指针
-pair<void *, uint64_t> DataFileHandler::read_lines_into_buffer(
-    const int &initial_adress,
+pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
+    const uint64_t &start_position,
     const int &line_size,
     const int &number_of_line)
 {
-    file_.seekg(0, ios::end);
-    uint64_t file_size = file_.tellg();
-
-    if (initial_adress > file_size)
+    if (start_position >= file_size_)
     {
         return pair<void *, int>(NULL, 0);
     }
 
-    uint64_t available_lines;
+    uint32_t available_lines;
 
-    // 计算可读行数目
-    if (initial_adress + line_size * number_of_line > file_size)
+    // 比较：读完所有内容后的位置 和 文件字节数 的大小关系（取等号意味着刚刚好读完）
+    if (start_position + line_size * number_of_line > file_size_)
     {
-        available_lines = (file_size - initial_adress) / line_size;
+        // 计算可读行数目
+        available_lines = (file_size_ - start_position) / line_size;
     }
     else
     {
         available_lines = line_size;
     }
-    uint64_t buffer_size = available_lines * line_size;
+    uint32_t buffer_size = available_lines * line_size;
 
     // 分配内存
-    void *p = new char[buffer_size];
+    void *new_buffer = new char[buffer_size];
 
-    if (!p)
+    if (!new_buffer)
     {
         cout << "memory allocation failed while reading file" << endl;
         return pair<void *, int>(NULL, 0);
     }
+    
+    // 计算start_position需要在哪一页开始读（包括边界情况）
+    // 如果一页大小为40，start_position=40，那么需要从第二页开始读
+    // 如果一页大小为40，start_position=41，那么需要从第二页开始读
+    int order_of_first_page = start_position / page_size_ + 1;
 
-    file_.seekg(initial_adress);
-    file_.read((char *)p, line_size * number_of_line);
+    // 计算磁盘读取的结束地址
+    int end_position = start_position + buffer_size;
 
-    return pair<void *, int>(p, available_lines);
-    ;
+    // debug
+    if (end_position > file_size_)
+        raise_exception(error_code::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE);
+
+    // 计算最后需要读取到哪一页（包括边界情况）
+    // 如果一页大小为40，end_position=40，那么只要读到第一页
+    // 如果一页大小为40，end_position=41，那么需要读到第二页
+    int order_of_last_page = end_position / page_size_;
+
+    // 若不位于位于边界则需要+1页
+    if (end_position % page_size_ != 0)
+        order_of_last_page++;
+
+    // 用于内存拷贝，指向还没被赋值的内存段的首位置
+    int current_position = 0;
+
+    // 第一页内容需要特殊处理
+    void *first_page = LRU_get(order_of_first_page);
+
+    // 计算在第一页内存里面的开始位置
+    // 若一页为40，在43开始，那么该值=43%40
+    int start_position_in_the_first_page = start_position % page_size_;
+
+    // 是否读取到第一页结尾
+    // 取等号时，正好读完第一页
+    if (order_of_first_page != order_of_last_page)
+    {
+        // 读取到结尾
+        current_position = page_size_ - start_position_in_the_first_page;
+        memcpy(new_buffer, first_page + start_position_in_the_first_page, current_position);
+    }
+    else
+    {
+        // 第一页都没读完就结束了或者第一页正好读完，直接return
+        memcpy(new_buffer, first_page + start_position_in_the_first_page, buffer_size);
+        return pair<void *, int>(new_buffer, available_lines);
+    }
+
+    // 处理除了第一页和最后一页以外的所有页
+    // 如果一共也就两页，那么不会执行这个循环体
+    for (int order_of_current_page = order_of_first_page + 1; order_of_current_page < order_of_last_page; order_of_current_page++)
+    {
+        // 读取整个page_size
+        void *page = LRU_get(order_of_current_page);
+        memcpy(new_buffer + current_position, page, page_size_);
+        current_position += page_size_;
+    }
+
+    // 最后一页也需要特殊处理
+    void *last_page = LRU_get(order_of_last_page);
+    memcpy(new_buffer + current_position, last_page, end_position % page_size_);
+
+    // 返回内存块与可用的行数
+    return pair<void *, int>(new_buffer, available_lines);
 }

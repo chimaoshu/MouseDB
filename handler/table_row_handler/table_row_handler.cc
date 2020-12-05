@@ -12,14 +12,14 @@ TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&tab
 }
 
 template <class T>
-T *TableRowHandler::read(uint64_t &off_set, uint64_t &line_number, list<int> wanted_columns)
+T *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns)
 {
-    pair<void *, uint64_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_, line_size_, line_number);
+    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_, line_size_, line_number);
 
     T *rows = new T;
 
     void *buffer_pointer = buffer_info.first;
-    uint64_t available_lines = buffer_info.second;
+    uint32_t available_lines = buffer_info.second;
 
     // 解析buffer
     for (int i = 0; i < available_lines; i++)
@@ -99,8 +99,8 @@ status_code TableRowHandler::write(const T &rows_information)
 
 // 特化
 
-template json *TableRowHandler::read(uint64_t &off_set, uint64_t &line_number, list<int> wanted_columns);
-template vector<json> *TableRowHandler::read(uint64_t &off_set, uint64_t &line_number, list<int> wanted_columns);
+template json *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
+template vector<json> *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
 
 template status_code TableRowHandler::write(const vector<json> &rows_information);
 template status_code TableRowHandler::write(const json &rows_information);

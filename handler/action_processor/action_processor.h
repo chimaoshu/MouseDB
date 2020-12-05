@@ -65,12 +65,13 @@ public:
     void drop_a_table(const string &table_name);
 
     // 追加几行（目前缺少对rows_info的正确性检验）
+    // 后续应该支持protobuf而非JSON数据的传入
     void append(const string &table_name, json &rows_info);
 
     // 查询几行，如果是调试模式返回json，否则返回vector
     void query(
-        uint64_t off_set,
-        uint64_t line_number,
+        uint32_t off_set,
+        uint32_t line_number,
         const string table_name,
         list<string> &wanted_column_names,
         bool debug_mode);

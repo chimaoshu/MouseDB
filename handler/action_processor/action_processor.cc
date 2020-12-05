@@ -135,8 +135,8 @@ void UserAction::append(const string &table_name, json &rows_info)
 }
 
 void UserAction::query(
-    uint64_t off_set,
-    uint64_t line_number,
+    uint32_t off_set,
+    uint32_t line_number,
     const string table_name,
     list<string> &wanted_column_names,
     bool debug_mode)
