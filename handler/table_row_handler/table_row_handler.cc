@@ -1,7 +1,8 @@
 #include "table_row_handler.h"
 
 TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler)
-    : table_name_(table_meta_handler->get_table_name()),
+    : file_(10), // 默认缓存十页内容
+      table_name_(table_meta_handler->get_table_name()),
       line_size_(table_meta_handler->get_line_size()),
       off_set_of_each_column_(table_meta_handler->get_off_set_of_each_column()),
       type_of_each_column_(table_meta_handler->get_type_of_each_column()),
