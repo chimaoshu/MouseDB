@@ -134,32 +134,38 @@ void UserAction::append(const string &table_name, json &rows_info)
     table_row_handler.write(rows_info);
 }
 
-void UserAction::query(
+void UserAction::get_lines(
     uint32_t off_set,
     uint32_t line_number,
     const string table_name,
     list<string> &wanted_column_names,
     bool debug_mode)
 {
+    // 实例化 TableRowHandler
     TableRowHandler table_row_handler(
         current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb",
         current_used_database_->get_table_meta_handler(table_name));
 
+    // 生成要求的列的编号
     list<int> wanted_column_orders = current_used_database_
                                          ->get_table_meta_handler(table_name)
                                          ->get_column_orders_by_names(wanted_column_names);
 
-    if (!debug_mode)
+    // debug
+    if (debug_mode)
     {
-        list<json> *outcome = table_row_handler.read<list<json>>(off_set, line_number, wanted_column_orders);
-        cout << *outcome << endl;
-        // 后续其他操作
-        delete outcome;
-    }
-    else
-    {
+        // 把数据读取后序列化为JSON
         json *outcome = table_row_handler.read<json>(off_set, line_number, wanted_column_orders);
         cout << *outcome << endl;
+        
         delete outcome;
+        return;
     }
+
+    // 把数据读取后序列化为list
+    list<json> *outcome = table_row_handler.read<list<json>>(off_set, line_number, wanted_column_orders);
+    cout << *outcome << endl;
+
+    // 后续其他操作
+    delete outcome;
 }

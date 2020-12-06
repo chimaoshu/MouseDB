@@ -121,9 +121,9 @@ void run()
     wanted_column.push_back("bar");
     wanted_column.push_back("barz");
 
-    ua.query(42,30,"student", wanted_column,true);
+    ua.get_lines(42,30,"student", wanted_column,true);
     cout << "---------" << endl;
-    ua.query(90,20,"student", wanted_column,true);
+    ua.get_lines(90,20,"student", wanted_column,true);
 
     // //也许你应该停一停
     // system("pause");

@@ -1,8 +1,10 @@
 #ifndef MOUSEDB_HANDLER_DATA_FILE_HANDLER_DATA_FILE_HANDLER_H_
 #define MOUSEDB_HANDLER_DATA_FILE_HANDLER_DATA_FILE_HANDLER_H_
 
-// 用来判断文件是否存在
+// 用于判断文件是否存在
 #include <unistd.h>
+
+// 用于内存拷贝
 #include <string.h>
 
 #include <map>

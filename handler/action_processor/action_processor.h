@@ -69,7 +69,7 @@ public:
     void append(const string &table_name, json &rows_info);
 
     // 查询几行，如果是调试模式返回json，否则返回list
-    void query(
+    void get_lines(
         uint32_t off_set,
         uint32_t line_number,
         const string table_name,
