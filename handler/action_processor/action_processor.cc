@@ -151,7 +151,7 @@ void UserAction::query(
 
     if (!debug_mode)
     {
-        vector<json> *outcome = table_row_handler.read<vector<json>>(off_set, line_number, wanted_column_orders);
+        list<json> *outcome = table_row_handler.read<list<json>>(off_set, line_number, wanted_column_orders);
         cout << *outcome << endl;
         // 后续其他操作
         delete outcome;

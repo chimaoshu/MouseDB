@@ -68,7 +68,7 @@ public:
     // 后续应该支持protobuf而非JSON数据的传入
     void append(const string &table_name, json &rows_info);
 
-    // 查询几行，如果是调试模式返回json，否则返回vector
+    // 查询几行，如果是调试模式返回json，否则返回list
     void query(
         uint32_t off_set,
         uint32_t line_number,

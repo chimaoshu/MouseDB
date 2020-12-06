@@ -100,7 +100,7 @@ status_code TableRowHandler::write(const T &rows_information)
 // 特化
 
 template json *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
-template vector<json> *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
+template list<json> *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
 
-template status_code TableRowHandler::write(const vector<json> &rows_information);
+template status_code TableRowHandler::write(const list<json> &rows_information);
 template status_code TableRowHandler::write(const json &rows_information);
