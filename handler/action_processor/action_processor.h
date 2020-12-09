@@ -19,11 +19,11 @@
 class UserAction
 {
 private:
-    // linux下获取当前文件目录
-    string current_dir_name_ = get_current_dir_name();
+    // 工作目录
+    string current_dir_name_;
 
     // 数据所在目录
-    string db_meta_dir_ = current_dir_name_ + "/data";
+    string db_meta_dir_;
 
     // 当前打开的数据库
     TableHandler *current_used_database_ = NULL;
@@ -39,6 +39,9 @@ private:
 public:
     // 当用户打开了程序，即读取数据库信息
     UserAction();
+
+    // 传入工作目录
+    UserAction(string work_folder);
 
     // 显示调试信息
     void print_debug_info();
@@ -72,7 +75,7 @@ public:
     void get_lines(
         uint32_t off_set,
         uint32_t line_number,
-        const string table_name,
+        const string &table_name,
         list<string> &wanted_column_names,
         bool debug_mode);
 };

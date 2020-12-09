@@ -2,7 +2,7 @@
 
 DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir, json &database_meta)
 {
-    // 文件夹不存在，则创建
+    // data文件夹不存在，则创建
     if (!access(database_meta_dir.c_str(), 0) == 0)
     {
         mkdir(database_meta_dir.c_str(), S_IRWXU);

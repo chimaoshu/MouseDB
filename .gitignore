@@ -3,7 +3,7 @@
 test/test_proto
 test/other
 test/handler_unit_test/test_all/*.py
-test/executable_file
+test/executable_file/*
 
 *.o
 

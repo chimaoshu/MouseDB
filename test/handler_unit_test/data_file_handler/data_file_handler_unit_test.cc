@@ -1,5 +1,5 @@
 #include <iostream>
-#include "data_file_handler.h"
+#include "handler/data_file_handler/data_file_handler.h"
 #include <string>
 
 using namespace std;
@@ -17,8 +17,7 @@ public:
 
     void test_append()
     {
-        DataFileHandler a;
-        // 必须是存在的文件路径
+        DataFileHandler a, b;
         a.open("./test/handler_unit_test/data_file_handler/test.json", 1, 1, 0, 0);
         a.append("\ntest");
     }

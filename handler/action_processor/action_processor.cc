@@ -1,7 +1,17 @@
 #include "action_processor.h"
 
 UserAction::UserAction()
-    : db_meta_handler_(db_meta_dir_),
+    : current_dir_name_(get_current_dir_name()),
+      db_meta_dir_(current_dir_name_ + "/data"),
+      db_meta_handler_(db_meta_dir_),
+      db_handler_(db_meta_handler_, db_meta_dir_)
+{
+}
+
+UserAction::UserAction(string work_folder)
+    : current_dir_name_(work_folder),
+      db_meta_dir_(current_dir_name_ + "/data"),
+      db_meta_handler_(db_meta_dir_),
       db_handler_(db_meta_handler_, db_meta_dir_)
 {
 }
@@ -14,9 +24,20 @@ void UserAction::print_debug_info()
     cout << "\n===============database_meta==================\n";
     cout << db_meta_handler_.get_database_meta() << '\n';
     cout << "\n===============database_meta==================\n";
-    
-    // TODO    
-    
+
+    if (current_used_database_)
+    {
+        cout << "current used database name" << current_used_database_->get_database_name() << "table info:";
+        auto table_names = current_used_database_->get_all_table_names();
+        for (auto it = table_names.begin(); it != table_names.end(); it++)
+        {
+            cout << "table name:" << *it << '\n';
+            cout << "table dir:" << current_used_database_->get_table_dir(*it) << '\n';
+            cout << "table meta:" << current_used_database_->get_table_meta(*it) << '\n';
+        }
+        cout << endl;
+    }
+
     cout << "\n=========================debug_info============================\n";
 }
 
@@ -137,7 +158,7 @@ void UserAction::append(const string &table_name, json &rows_info)
 void UserAction::get_lines(
     uint32_t off_set,
     uint32_t line_number,
-    const string table_name,
+    const string &table_name,
     list<string> &wanted_column_names,
     bool debug_mode)
 {
@@ -157,7 +178,7 @@ void UserAction::get_lines(
         // 把数据读取后序列化为JSON
         json *outcome = table_row_handler.read<json>(off_set, line_number, wanted_column_orders);
         cout << *outcome << endl;
-        
+
         delete outcome;
         return;
     }

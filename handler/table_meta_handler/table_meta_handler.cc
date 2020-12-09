@@ -54,7 +54,10 @@ status_code TableMetaHandler::load()
 
     // 一般是路径错误，文件打不开
     if (err)
+    {
+        cout << "warning:table meta json file not exists." << '\n';
         return err;
+    }
 
     respond<string> p = file.read_all();
 

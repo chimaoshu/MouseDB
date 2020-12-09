@@ -47,7 +47,7 @@ public:
     // 构造函数，传入数据库元数据的JSON信息（databse_meta）
     // database_meta是对DatabaseMetaHandler成员的引用
     // 在DatabaseMetaHandler对JSON修改时，JSON也会同步得到修改
-    TableHandler(const string database_name_, const json &database_meta);
+    TableHandler(const string &database_name_, const json &database_meta);
 
     ~TableHandler();
 

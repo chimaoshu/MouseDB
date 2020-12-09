@@ -1,8 +1,10 @@
 #include "table_handler.h"
 
-TableHandler::TableHandler(const string database_name, const json &database_meta)
-    : database_meta_(database_meta), database_name_(database_name)
+TableHandler::TableHandler(const string &database_name, const json &database_meta)
+    : database_meta_(database_meta)
 {
+    database_name_ = database_name;
+
     string table_dir, table_name;
 
     // 生成每一个表的TableMetaHandler并赋值到map中
@@ -11,7 +13,7 @@ TableHandler::TableHandler(const string database_name, const json &database_meta
         table_name = it.key();
         table_dir = it.value();
 
-        string table_meta_path = table_dir + table_name + ".json";
+        string table_meta_path = table_dir + '/' + table_name + ".json";
         map_of_name_and_table_meta_handler_[table_name] = new TableMetaHandler(table_meta_path);
     }
 }

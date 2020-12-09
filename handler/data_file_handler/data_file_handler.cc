@@ -146,12 +146,14 @@ respond<string> DataFileHandler::read_all()
     // 回到开头
     file_.seekg(0, ios::beg);
 
-    char *char_file_content = new char[buffer_length];
+    // 加一位存储\0
+    char *char_file_content = new char[buffer_length + 1];
 
     if (!char_file_content)
         return respond<string>("", error_code::ERROR_MEMORY_ALLOCATION_FAIL);
 
     file_.read(char_file_content, buffer_length);
+    char_file_content[buffer_length] = '\0';
 
     string file_content = char_file_content;
 
