@@ -20,7 +20,7 @@ DataFileHandler::~DataFileHandler()
     for (auto it = pages_cache_.begin(); it != pages_cache_.end(); it++)
     {
         if (it->second)
-            delete[] (char *)(it->second);
+            delete[](char *)(it->second);
     }
 }
 
@@ -108,13 +108,18 @@ status_code DataFileHandler::append(const string &string_to_write)
 // 文件尾追加二进制数据
 status_code DataFileHandler::append(void *buffer, int buffer_size)
 {
-    if (!writable_)
-        return error_code::ERROR_NOT_APPENDABLE;
+    // error_code::ERROR_NOT_APPENDABLE;
+    assert(writable_);
 
     if (!appendable_)
         file_.seekp(0, ios::end);
 
     file_.write((char *)buffer, buffer_size);
+
+    // 删除LRU缓存中刚更新的这一页，即最后一页
+    int end_position = file_.tellp();
+    int order_of_last_page = end_position / page_size_;
+    LRU_delete(order_of_last_page);
 
     return error_code::SUCCESS;
 }
@@ -194,15 +199,14 @@ void *DataFileHandler::read_page_to_memory(uint32_t page_order)
 
 void *DataFileHandler::LRU_get(uint32_t page_order)
 {
-    // 如果已经存在，则提到最前，返回
     for (auto it = LRU_cache_list.begin(); it != LRU_cache_list.end(); it++)
     {
+        // 如果已经存在，则把list中序号位置提到最前，返回内存
         if (*it == page_order)
         {
-            uint32_t temp = *it;
             LRU_cache_list.erase(it);
-            LRU_cache_list.push_front(temp);
-            return pages_cache_[temp];
+            LRU_cache_list.push_front(page_order);
+            return pages_cache_[page_order];
         }
     }
 
@@ -220,12 +224,13 @@ void *DataFileHandler::LRU_get(uint32_t page_order)
         uint32_t order_of_page_to_delete = LRU_cache_list.back();
         auto it = pages_cache_.find(order_of_page_to_delete);
 
-        // debug 如果找不到，程序一定有bug
-        if (it == pages_cache_.end())
-            raise_exception(error_code::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH);
+        // error_code::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH
+        assert(it != pages_cache_.end());
 
         // 淘汰掉优先级最低缓存
         pages_cache_.erase(it);
+
+        // 删去序号列表中的元素
         LRU_cache_list.pop_back();
     }
 
@@ -235,6 +240,26 @@ void *DataFileHandler::LRU_get(uint32_t page_order)
 
     // 最后返回
     return buffer;
+}
+
+void DataFileHandler::LRU_delete(uint32_t order_of_page_to_delete)
+{
+    for (auto it = LRU_cache_list.begin(); it != LRU_cache_list.end(); it++)
+    {
+        if (*it == order_of_page_to_delete)
+        {
+            // 删除list中序号
+            LRU_cache_list.erase(it);
+            
+            auto it_of_map = pages_cache_.find(order_of_page_to_delete);
+            assert(it_of_map != pages_cache_.end());
+
+            // 删除相应的内存
+            pages_cache_.erase(it_of_map);
+
+            return;
+        }
+    }
 }
 
 // 把lines读进缓存中，返回指向缓存的指针与可用的行数（防止越界）
@@ -271,7 +296,7 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
         cout << "memory allocation failed while reading file" << endl;
         return pair<void *, int>(NULL, 0);
     }
-    
+
     // 计算start_position需要在哪一页开始读（包括边界情况）
     // 如果一页大小为40，start_position=40，那么需要从第二页开始读
     // 如果一页大小为40，start_position=41，那么需要从第二页开始读
@@ -280,9 +305,8 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     // 计算磁盘读取的结束地址
     int end_position = start_position + buffer_size;
 
-    // debug
-    if (end_position > file_size_)
-        raise_exception(error_code::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE);
+    // error_code::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
+    assert(end_position <= file_size_);
 
     // 计算最后需要读取到哪一页（包括边界情况）
     // 如果一页大小为40，end_position=40，那么只要读到第一页

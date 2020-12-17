@@ -63,6 +63,9 @@ private:
     // 只管get就是了，缓不缓存全部是它自己管理
     void *LRU_get(uint32_t pgae_order);
 
+    // 删除某一个队列在LRU队列中的缓存（如果存在的话）
+    void LRU_delete(uint32_t order_of_page_to_delete);
+
 public:
     // 缓存的页数，默认为1，不允许为0
     DataFileHandler(uint16_t number_of_page_to_cache=1); 
@@ -89,10 +92,10 @@ public:
     // 关闭file_，但不析构，可以重新open。
     void close();
 
-    // 在文件末尾追加字符串
+    // 在文件末尾追加字符串，用于读JSON
     status_code append(const string &string_to_write);
 
-    // 在文件末尾追加二进制数据
+    // 在文件末尾追加二进制数据，用于读mdb
     status_code append(void *buffer, int buffer_size);
 
     // 从initial_adress开始，以每行line_size的大小，读number_of_line行
