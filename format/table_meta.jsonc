@@ -16,7 +16,7 @@
 
     // type中出现的类型：int、char、float、double
     "table_name": "表名",
-    "primary_key": [
+    "primary_key": [ // 不允许以char类型为primary_key
         {
             "name": "foo",
             "type": "int",

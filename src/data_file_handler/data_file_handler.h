@@ -16,9 +16,6 @@
 #include "handler/exception_handler/exception_handler.h"
 #include "lib/Json/single_include/nlohmann/json.hpp"
 
-using namespace std;
-using json = nlohmann::json;
-
 // 文件处理类
 // 使用默认构造函数，因此需要在实例化后自行调用open打开文件，再进行后续操作。
 class DataFileHandler
