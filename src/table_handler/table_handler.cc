@@ -1,5 +1,9 @@
 #include "table_handler.h"
 
+
+using namespace std;
+using json = nlohmann::json;
+
 TableHandler::TableHandler(const string &database_name, const json &database_meta)
     : database_meta_(database_meta)
 {

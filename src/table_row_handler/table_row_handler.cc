@@ -1,5 +1,8 @@
 #include "table_row_handler.h"
 
+using namespace std;
+using json = nlohmann::json;
+
 TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler)
     : file_(1), // 默认缓存n页内容
       table_name_(table_meta_handler->get_table_name()),

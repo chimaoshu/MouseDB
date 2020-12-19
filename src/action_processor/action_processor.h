@@ -5,16 +5,19 @@
 #include<stdint.h>
 
 #include <iostream>
-#include "lib/Json/single_include/nlohmann/json.hpp"
+#include "third_part/Json/single_include/nlohmann/json.hpp"
 
-#include "handler/exception_handler/exception_handler.h"
-#include "handler/data_file_handler/data_file_handler.h"
-#include "handler/table_meta_handler/table_meta_handler.h"
-#include "handler/table_handler/table_handler.h"
-#include "handler/table_row_handler/table_row_handler.h"
-#include "handler/database_handler/database_handler.h"
-#include "handler/database_meta_handler/database_meta_handler.h"
+#include "src/exception_handler/exception_handler.h"
+#include "src/data_file_handler/data_file_handler.h"
+#include "src/table_meta_handler/table_meta_handler.h"
+#include "src/table_handler/table_handler.h"
+#include "src/table_row_handler/table_row_handler.h"
+#include "src/database_handler/database_handler.h"
+#include "src/database_meta_handler/database_meta_handler.h"
 
+
+using namespace std;
+using json = nlohmann::json;
 
 class UserAction
 {

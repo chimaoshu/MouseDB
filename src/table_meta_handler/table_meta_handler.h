@@ -1,21 +1,19 @@
 #ifndef MOUSEDB_HANDLER_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 #define MOUSEDB_HANDLER_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 
+
 #include <string>
 #include <fstream>
 #include <map>
 #include<list>
 
 // json解析库
-#include "lib/Json/single_include/nlohmann/json.hpp"
+#include "third_part/Json/single_include/nlohmann/json.hpp"
 
 // 文件读写
-#include "handler/data_file_handler/data_file_handler.h"
-#include "handler/exception_handler/exception_handler.h"
+#include "src/data_file_handler/data_file_handler.h"
+#include "src/exception_handler/exception_handler.h"
 
-using namespace std;
-
-using json = nlohmann::json;
 
 // 处理表头的类：
 // 每个表头都需要实例化该类一次进行管理（即一个表头对应一个实例）
@@ -34,10 +32,10 @@ class TableMetaHandler
 private:
 
     // 表元数据
-    json table_meta_;
+    nlohmann::json table_meta_;
 
     // 表元数据的存储路径
-    string table_meta_path_;
+    std::string table_meta_path_;
 
     // 记录一行在磁盘中所占byte数
     // 当首次获取时会进行计算并赋值
@@ -48,7 +46,7 @@ private:
     // 首元素存储长度
     // 当首次获取时会进行计算并赋值
     // 后续获取时会直接读取
-    vector<uint16_t> off_set_of_each_column_;
+    std::vector<uint16_t> off_set_of_each_column_;
 
     // 用数组来存储每列的key种类，首元素存储长度
     // 当首次获取时会进行计算并赋值
@@ -64,10 +62,10 @@ private:
     // 9:float
     // 10:double
     // -123:char（负数表示char，数值表示char的长度）（其实char的长度也可以通过前后偏移相减得到）
-    vector<int8_t> type_of_each_column_;
+    std::vector<int8_t> type_of_each_column_;
 
     // 存储每一列的列名与对应的序号
-    map<string, int> map_from_column_name_to_column_order_;
+    std::map<std::string, int> map_from_column_name_to_column_order_;
 
     // off_set_of_each_column_
     // type_of_each_column_
@@ -84,32 +82,32 @@ public:
     // 当首次调用时会进行计算并赋值
     // 后续调用时会直接读取
     uint16_t get_line_size();
-    vector<uint16_t> &get_off_set_of_each_column();
-    vector<int8_t> &get_type_of_each_column();
+    std::vector<uint16_t> &get_off_set_of_each_column();
+    std::vector<int8_t> &get_type_of_each_column();
 
-    const string get_table_name();
+    const std::string get_table_name();
 
     // 获取表元数据的存储路径，只读
-    const string &get_table_meta_path();
+    const std::string &get_table_meta_path();
 
     // 获取表元数据，只读
-    const json &get_table_meta();
+    const nlohmann::json &get_table_meta();
 
     // TableMetaHandler() = delete;
 
     // 传入表头路径，通过load函数读取表头数据进行构造
-    TableMetaHandler(const string &table_meta_path);
+    TableMetaHandler(const std::string &table_meta_path);
 
     // 传入表路径、表头数据直接构造
-    TableMetaHandler(const string &table_meta_path, json &table_meta);
+    TableMetaHandler(const std::string &table_meta_path, nlohmann::json &table_meta);
 
     // 使用传入的路径保存表头文件（另存为）
-    status_code save(const string &table_meta_path);
+    status_code save(const std::string &table_meta_path);
 
     // 使用类成员中的表头路径保存表头文件（替换原文件内容）
     status_code save();
 
     // 传入列名，获取对应的列序号并从小到大排序返回
-    list<int> get_column_orders_by_names(const list<string>&column_names);
+    std::list<int> get_column_orders_by_names(const std::list<std::string>&column_names);
 };
 #endif // MOUSEDB_HANDLER_TABLE_META_HANDLER_H_

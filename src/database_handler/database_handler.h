@@ -1,16 +1,17 @@
 #ifndef MOUSEDB_HANDLER_DATABASE_HANDLER_DATABASE_HANDLER_H_
 #define MOUSEDB_HANDLER_DATABASE_HANDLER_DATABASE_HANDLER_H_
 
+
 #include <string>
 
 // 数据库元数据处理
-#include "handler/database_meta_handler/database_meta_handler.h"
+#include "src/database_meta_handler/database_meta_handler.h"
 
 // 当你打开一个数据库，将返回一个table_handler实例
-#include "handler/table_handler/table_handler.h"
+#include "src/table_handler/table_handler.h"
 
 // 异常处理
-#include "handler/exception_handler/exception_handler.h"
+#include "src/exception_handler/exception_handler.h"
 
 // 管理元数据中描述的所有的数据库，元数据格式请参考format/database_meta.jsonc
 // 该类实例不应该被释放，直到程序结束
@@ -24,30 +25,30 @@ private:
 
     // 数据库元数据
     // 是对DatabaseMetaHandler类成员的引用
-    const json &database_meta_;
+    const nlohmann::json &database_meta_;
 
     // 数据库元数据所在目录
     // 是对UserAction类成员的引用
-    string &database_meta_dir_;
+    std::string &database_meta_dir_;
 
 public:
     // 传入对DatabaseMetaHandler类实例的引用
-    DatabaseHandler(DatabaseMetaHandler &database_meta_handler, string &database_meta_dir);
+    DatabaseHandler(DatabaseMetaHandler &database_meta_handler, std::string &database_meta_dir);
 
     // 创建一个数据库并返回状态码
     // 将调用DatabaseMetaHandler实例对JSON进行修改，并创建一个目录
-    status_code create(const string &database_name);
+    status_code create(const std::string &database_name);
 
     // 打开一个数据库，返回指向TableHandler实例的指针
     // 若指针为空，则打开失败
-    TableHandler *open(const string &database_name);
+    TableHandler *open(const std::string &database_name);
 
     // 删除一个数据库并返回状态码
     // 过程包括：删除数据库中的表、表头，删除数据库元数据中内容
-    status_code drop(const string &database_name);
+    status_code drop(const std::string &database_name);
 
     // 返回所有数据库的名字
-    list<string> get_all_database_name();
+    std::list<std::string> get_all_database_name();
 };
 
 #endif // MOUSEDB_HANDLER_DATABASE_HANDLER_DATABASE_HANDLER_H_

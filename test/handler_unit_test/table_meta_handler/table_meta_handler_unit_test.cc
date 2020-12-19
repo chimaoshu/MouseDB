@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "handler/table_meta_handler/table_meta_handler.h"
+#include "src/table_meta_handler/table_meta_handler.h"
 
-#include "lib/Json/single_include/nlohmann/json.hpp"
+#include "third_part/Json/single_include/nlohmann/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;

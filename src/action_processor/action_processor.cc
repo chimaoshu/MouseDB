@@ -98,8 +98,9 @@ void UserAction::use_a_database(const string &database_name)
 
 void UserAction::show_table_names()
 {
-    if (!current_used_database_)
-        raise_exception(error_code::ERROR_TABLE_NOT_OPENED);
+    // debug
+    // error_code::ERROR_TABLE_NOT_OPENED
+    assert(current_used_database_);
 
     list<string> table_names = current_used_database_->get_all_table_names();
 
@@ -118,9 +119,10 @@ void UserAction::show_table_names()
 
 void UserAction::create_a_table(const string &table_name, json &table_meta)
 {
-    if (!current_used_database_)
-        raise_exception(error_code::ERROR_TABLE_NOT_OPENED);
-
+    // debug
+    // error_code::ERROR_TABLE_NOT_OPENED
+    assert(current_used_database_);
+    
     //  data/数据库名/表名/
     string default_table_dir = db_meta_dir_ + '/' + current_used_database_->get_database_name() + '/' + table_name;
 

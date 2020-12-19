@@ -1,5 +1,7 @@
 #include "data_file_handler.h"
 
+using namespace std;
+
 // 判断文件是否存在
 bool DataFileHandler::file_exist(const string &path)
 {
@@ -213,9 +215,9 @@ void *DataFileHandler::LRU_get(uint32_t page_order)
     // 如果不存在，则读取、放到最前、并挤掉最后一个，返回
     void *buffer = read_page_to_memory(page_order);
 
-    // debug
-    if (!buffer)
-        raise_exception(error_code::ERROR_DEMANDING_PAGE_TO_CACHE_EXCEEDS_THE_FILE_SIZE);
+    // debug 
+    // ERROR_DEMANDING_PAGE_TO_CACHE_EXCEEDS_THE_FILE_SIZE
+    assert(buffer);
 
     // 如果已满
     if (LRU_cache_list.size() == number_of_page_to_cache_)

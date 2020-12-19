@@ -13,8 +13,8 @@
 #include <fstream>
 #include <iostream>
 
-#include "handler/exception_handler/exception_handler.h"
-#include "lib/Json/single_include/nlohmann/json.hpp"
+#include "src/exception_handler/exception_handler.h"
+#include "third_part/Json/single_include/nlohmann/json.hpp"
 
 // 文件处理类
 // 使用默认构造函数，因此需要在实例化后自行调用open打开文件，再进行后续操作。
@@ -22,7 +22,7 @@ class DataFileHandler
 {
 private:
     // 路径
-    string path_;
+    std::string path_;
 
     // 打开模式
     bool writable_;
@@ -31,7 +31,7 @@ private:
     bool truncate_;
 
     // 被打开的文件
-    fstream file_;
+    std::fstream file_;
 
     // 文件大小
     uint64_t file_size_;
@@ -45,10 +45,10 @@ private:
     const int page_size_ = 4096;
 
     // 从页码到对应内存块的映射
-    map<uint32_t, void*> pages_cache_;
+    std::map<uint32_t, void*> pages_cache_;
 
     // 队列，按照LRU算法，记录缓存页的页码
-    list<uint32_t> LRU_cache_list;
+    std::list<uint32_t> LRU_cache_list;
 
     // 将指定页码的页读取到内存，并返回
     void *read_page_to_memory(uint32_t page_order);
@@ -69,10 +69,10 @@ public:
     ~DataFileHandler();
 
     // 路径下的文件是否存在
-    bool file_exist(const string &path);
+    bool file_exist(const std::string &path);
 
     // 返回文件路径
-    string get_path();
+    std::string get_path();
 
     // 给成员变量file_赋值
     // 若不可读，那么在文件不存在时，就会创建文件
@@ -82,7 +82,7 @@ public:
     // append：可写时从最后写
     // truncate：可写时在打开时清空文件
     // read：可读
-    status_code open(const string &file_path, bool write = 1, bool append = 0, bool truncate = 0, bool read = 0);
+    status_code open(const std::string &file_path, bool write = 1, bool append = 0, bool truncate = 0, bool read = 0);
 
     bool is_open();
 
@@ -90,24 +90,24 @@ public:
     void close();
 
     // 在文件末尾追加字符串，用于读JSON
-    status_code append(const string &string_to_write);
+    status_code append(const std::string &string_to_write);
 
     // 在文件末尾追加二进制数据，用于读mdb
     status_code append(void *buffer, int buffer_size);
 
     // 从initial_adress开始，以每行line_size的大小，读number_of_line行
     // 返回指向内存的指针与读取到的可用行数
-    pair<void *, uint32_t> read_lines_into_buffer(
+    std::pair<void *, uint32_t> read_lines_into_buffer(
         const uint64_t &start_position,
         const int &line_size,
         const int &number_of_line);
 
     // 读取一行字符串，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
-    respond<string> read_line();
+    respond<std::string> read_line();
 
     // 读取整个文件内容，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
-    respond<string> read_all();
+    respond<std::string> read_all();
 };
 #endif // MOUSEDB_HANDLER_DATA_FILE_HANDLER_H_

@@ -15,9 +15,6 @@ typedef uint8_t status_code;
 template <typename T>
 using respond = std::pair<T, status_code>;
 
-// 有些error不能被忽略，这种error的出现意味着bug的存在
-void raise_exception(status_code code);
-
 // 定义状态码
 namespace error_code
 {

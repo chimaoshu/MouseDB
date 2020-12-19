@@ -1,5 +1,8 @@
 #include "database_meta_handler.h"
 
+using namespace std;
+using json = nlohmann::json;
+
 DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir, json &database_meta)
 {
     // data文件夹不存在，则创建

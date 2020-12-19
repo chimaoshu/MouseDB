@@ -4,13 +4,12 @@
 // for debug
 #include <iostream>
 
-#include "lib/Json/single_include/nlohmann/json.hpp"
+#include "third_part/Json/single_include/nlohmann/json.hpp"
 
-#include "handler/table_meta_handler/table_meta_handler.h"
-#include "handler/data_file_handler/data_file_handler.h"
-#include "handler/table_row_handler/buffer_reader_and_writer.h"
+#include "src/table_meta_handler/table_meta_handler.h"
+#include "src/data_file_handler/data_file_handler.h"
+#include "src/table_row_handler/buffer_reader_and_writer.h"
 
-using json = nlohmann::json;
 
 class TableRowHandler
 {
@@ -18,22 +17,22 @@ private:
     DataFileHandler file_;
 
     // 这里不能用引用，我不知道为什么，引用会赋值失败s
-    const string table_name_;
+    const std::string table_name_;
 
     // 这里不能用引用，我不知道为什么，莫名其妙会改变，怀疑是内存覆盖
     const uint16_t line_size_;
 
     // 对TableMetaHandler成员指针的引用
-    const vector<uint16_t> &off_set_of_each_column_;
-    const vector<int8_t> &type_of_each_column_;
+    const std::vector<uint16_t> &off_set_of_each_column_;
+    const std::vector<int8_t> &type_of_each_column_;
 
     // 对TableMetaHandler成员的引用
-    const json &table_meta_;
+    const nlohmann::json &table_meta_;
 
 public:
     // 打开文件
     // 若打开失败，file.is_open() = false
-    TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler);
+    TableRowHandler(const std::string &file_path, TableMetaHandler *&table_meta_handler);
 
     ~TableRowHandler() = default;
 
@@ -52,7 +51,7 @@ public:
     // 调试用JSON、使用换Vector
     // 读取完需要释放内存
     template <class T>
-    T *read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
+    T *read(uint32_t &off_set, uint32_t &line_number, std::list<int> wanted_columns);
 
     // 返回状态码
     // 在表末尾追加一行或多行数据，传入的JSON格式同上（内层JSON，外层是JSON或Vector）

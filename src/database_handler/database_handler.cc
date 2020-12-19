@@ -1,5 +1,9 @@
 #include "database_handler.h"
 
+
+using namespace std;
+using json = nlohmann::json;
+
 // 此处需要指定类成员database_meta_handler_的初始化
 // DatabaseMetaHandler中的机制已保证此处的database_meta_handler_是正确完成初始化的
 DatabaseHandler::DatabaseHandler(DatabaseMetaHandler &database_meta_handler, string &database_meta_dir)

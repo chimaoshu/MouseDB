@@ -1,5 +1,9 @@
 #include "table_meta_handler.h"
 
+
+using namespace std;
+using json = nlohmann::json;
+
 const string TableMetaHandler::get_table_name()
 {
     return table_meta_["table_name"];
