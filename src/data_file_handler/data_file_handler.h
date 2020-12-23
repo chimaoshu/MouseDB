@@ -1,5 +1,5 @@
-#ifndef MOUSEDB_HANDLER_DATA_FILE_HANDLER_DATA_FILE_HANDLER_H_
-#define MOUSEDB_HANDLER_DATA_FILE_HANDLER_DATA_FILE_HANDLER_H_
+#ifndef MOUSEDB_SRC_DATA_FILE_HANDLER_DATA_FILE_HANDLER_H_
+#define MOUSEDB_SRC_DATA_FILE_HANDLER_DATA_FILE_HANDLER_H_
 
 // 用于判断文件是否存在
 #include <unistd.h>
@@ -110,4 +110,4 @@ public:
     // 在异常或者已读取到底的情况下，字符串为空
     respond<std::string> read_all();
 };
-#endif // MOUSEDB_HANDLER_DATA_FILE_HANDLER_H_
+#endif // MOUSEDB_SRC_DATA_FILE_HANDLER_H_

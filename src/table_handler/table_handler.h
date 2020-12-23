@@ -1,5 +1,5 @@
-#ifndef MOUSEDB_HANDLER_TABLE_HANDLER_TABLE_HANDLER_H_
-#define MOUSEDB_HANDLER_TABLE_HANDLER_TABLE_HANDLER_H_
+#ifndef MOUSEDB_SRC_TABLE_HANDLER_TABLE_HANDLER_H_
+#define MOUSEDB_SRC_TABLE_HANDLER_TABLE_HANDLER_H_
 
 
 #include <string>
@@ -84,4 +84,4 @@ public:
     list<std::string> get_all_table_names();
 };
 
-#endif // MOUSEDB_HANDLER_TABLE_HANDLER_H_
+#endif // MOUSEDB_SRC_TABLE_HANDLER_H_

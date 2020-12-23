@@ -1,5 +1,5 @@
-#ifndef MOUSEDB_HANDLER_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
-#define MOUSEDB_HANDLER_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
+#ifndef MOUSEDB_SRC_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
+#define MOUSEDB_SRC_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 
 
 #include <string>
@@ -110,4 +110,4 @@ public:
     // 传入列名，获取对应的列序号并从小到大排序返回
     std::list<int> get_column_orders_by_names(const std::list<std::string>&column_names);
 };
-#endif // MOUSEDB_HANDLER_TABLE_META_HANDLER_H_
+#endif // MOUSEDB_SRC_TABLE_META_HANDLER_H_

@@ -1,47 +1,17 @@
-#ifndef MOUSEDB_HANDLER_TABLE_BUFFER_READER_AND_WRITER_H_
-#define MOUSEDB_HANDLER_TABLE_BUFFER_READER_AND_WRITER_H_
-
-#include <stdint.h>
+#ifndef MOUSEDB_SRC_TABLE_BUFFER_READER_AND_WRITER_H_
+#define MOUSEDB_SRC_TABLE_BUFFER_READER_AND_WRITER_H_
 
 #include <string>
 #include <vector>
 
-#include "third_part/Json/single_include/nlohmann/json.hpp"
+#include "src/tools/type.h"
 
-/*
-负责处理从id到类型的映射
-1:int_8_t
-2:int_16_t
-3:int_32_t
-4:int_64_t
-5:uint_8_t
-6:uint_16_t
-7:uint_32_t
-8:uint_64_t
-9:float
-10:double
--123:char（负数表示char，数值表示char的长度）
-*/
+#include "third_part/Json/single_include/nlohmann/json.hpp"
 
 /*
 这代码早晚要被优化掉
 递归效率太低，况且这段代码会被重复调用
 */
-
-template <int N> struct BufferTypeMap{ using Type = char; };
-template <> struct BufferTypeMap<1>{ using Type = int8_t; };
-template <> struct BufferTypeMap<2>{ using Type = int16_t; };
-template <> struct BufferTypeMap<3>{ using Type = int32_t; };
-template <> struct BufferTypeMap<4>{ using Type = int64_t; };
-template <> struct BufferTypeMap<5>{ using Type = uint8_t; };
-template <> struct BufferTypeMap<6>{ using Type = uint16_t; };
-template <> struct BufferTypeMap<7>{ using Type = uint32_t; };
-template <> struct BufferTypeMap<8>{ using Type = uint64_t; };
-template <> struct BufferTypeMap<9>{ using Type = float; };
-template <> struct BufferTypeMap<10>{ using Type = double; };
-
-template <int N>
-using BufferType = typename BufferTypeMap<N>::Type;
 
 // 传入：种类ID、初始写入地址、存入的容器（JSON）
 // 如果要高性能，应该用protobuf而不是json传递信息的。。。以后慢慢改吧。
@@ -103,4 +73,4 @@ inline void write_buffer<0>(const int &type_id, void *&initial_address, nlohmann
     }
 }
 
-#endif // MOUSEDB_HANDLER_TABLE_BUFFER_READER_AND_WRITER_H_
+#endif // MOUSEDB_SRC_TABLE_BUFFER_READER_AND_WRITER_H_
