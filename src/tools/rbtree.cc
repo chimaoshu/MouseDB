@@ -20,13 +20,11 @@ bool compare_rule_for_primary_key::operator()(const rbtree_key &x, const rbtree_
     }
 }
 
-// add by primary key(vector) and row_order
 void rbtree::add_node(const rbtree_key &key, order_of_row_in_file row_order)
 {
     tree_._M_insert_equal(rbtree_value(key, row_order));
 }
 
-// add by primary key(list) and row_order
 void rbtree::add_node(const list<primary_key_type> &key, order_of_row_in_file row_order)
 {
     vector<primary_key_type> temp;
@@ -40,25 +38,6 @@ void rbtree::add_node(const list<primary_key_type> &key, order_of_row_in_file ro
     tree_._M_insert_equal(make_pair(temp, row_order));
 }
 
-// delete the first node(the minimum one) that match the given key
-void rbtree::delete_node_by_key(const rbtree_key &key)
-{
-    auto it = tree_.find(key);
-
-    if (it != tree_.end())
-        tree_.erase(it);
-}
-
-// delete all nodes with primary keys equals to the given parameter
-void rbtree::delete_nodes_by_key(const rbtree_key &key)
-{
-    auto res = tree_.equal_range(key);
-
-    for (auto it = res.first; it != res.second; it++)
-        tree_.erase(it);
-}
-
-// return the pointer pointing to the values list
 list<order_of_row_in_file> *rbtree::find_values_by_primary_keys(const rbtree_key &key)
 {
     list<order_of_row_in_file> *values = new list<order_of_row_in_file>;
@@ -72,7 +51,6 @@ list<order_of_row_in_file> *rbtree::find_values_by_primary_keys(const rbtree_key
     return values;
 }
 
-// 这里不做索引优化，纯查找位于两个pk之间的值，需保证传入的参数符合primary key格式
 list<order_of_row_in_file> *rbtree::find_values_between_primary_keys(
     const rbtree_key &min, const rbtree_key &max)
 {
