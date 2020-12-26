@@ -19,6 +19,16 @@ const json &TableMetaHandler::get_table_meta()
     return table_meta_;
 }
 
+inline int TableMetaHandler::get_key_number()
+{
+    return table_meta_["primary_key"].size() + table_meta_["other_keys"].size();
+}
+
+inline int TableMetaHandler::get_primary_key_number()
+{
+    return table_meta_["primary_key"].size();
+}
+
 // 通过load读取对应路径下元数据
 TableMetaHandler::TableMetaHandler(const string &table_meta_path)
 :table_meta_path_(table_meta_path)

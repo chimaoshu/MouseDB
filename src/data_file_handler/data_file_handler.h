@@ -64,8 +64,8 @@ private:
     void LRU_delete(uint32_t order_of_page_to_delete);
 
 public:
-    // 缓存的页数，默认为1，不允许为0
-    DataFileHandler(uint16_t number_of_page_to_cache=1); 
+    // 缓存的页数，默认为0，不缓存为0
+    DataFileHandler(uint16_t number_of_page_to_cache=0); 
     ~DataFileHandler();
 
     // 路径下的文件是否存在

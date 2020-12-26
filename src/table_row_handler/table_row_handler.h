@@ -9,6 +9,7 @@
 #include "src/table_meta_handler/table_meta_handler.h"
 #include "src/data_file_handler/data_file_handler.h"
 #include "src/table_row_handler/buffer_reader_and_writer.h"
+#include "src/hot_data/hot_data.h"
 
 
 class TableRowHandler
@@ -16,10 +17,10 @@ class TableRowHandler
 private:
     DataFileHandler file_;
 
-    // 这里不能用引用，我不知道为什么，引用会赋值失败
+    // 表名
     const std::string table_name_;
 
-    // 这里不能用引用，我不知道为什么，莫名其妙会改变，怀疑是内存覆盖
+    // 一行所占字节数
     const uint16_t line_size_;
 
     // 对TableMetaHandler成员指针的引用
@@ -52,6 +53,9 @@ public:
     // 读取完需要释放内存
     template <class T>
     T *read(uint32_t &off_set, uint32_t &line_number, std::list<int> wanted_columns);
+
+    // 读取后返回序列化为protobuf的数据
+    // TODO
 
     // 返回状态码
     // 在表末尾追加一行或多行数据，传入的JSON格式同上（内层JSON，外层是JSON或Vector）

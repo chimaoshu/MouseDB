@@ -59,7 +59,7 @@ public:
     void add_node(const rbtree_key &key, order_of_row_in_file row_order);
 
     // 传入primary key和对应行在文件中的行数，构成一个节点添加到红黑树
-    void add_node(const std::list<primary_key_type> &key, order_of_row_in_file row_order);
+    // void add_node(const std::list<primary_key_type> &key, order_of_row_in_file row_order);
 
     // 寻找primary key等于给定key值的所有值组成的链表，用完需要自行释放空间
     std::list<order_of_row_in_file> *find_values_by_primary_keys(const rbtree_key &key);

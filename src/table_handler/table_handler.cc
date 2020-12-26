@@ -1,6 +1,5 @@
 #include "table_handler.h"
 
-
 using namespace std;
 using json = nlohmann::json;
 
@@ -18,17 +17,24 @@ TablesHandler::TablesHandler(const string &database_name, const json &database_m
         table_dir = it.value();
 
         string table_meta_path = table_dir + '/' + table_name + ".json";
-        map_of_name_and_table_meta_handler_[table_name] = new TableMetaHandler(table_meta_path);
+        map_of_table_name_to_table_meta_handler_[table_name] = new TableMetaHandler(table_meta_path);
     }
 }
 
-// 释放TeblaMetaHandler
 TablesHandler::~TablesHandler()
 {
-    // 遍历map_of_name_and_table_meta_handler_
-    for (auto it = map_of_name_and_table_meta_handler_.begin(); it != map_of_name_and_table_meta_handler_.end(); it++)
+    // 遍历存储在map中的TableMetaHandler
+    for (auto it = map_of_table_name_to_table_meta_handler_.begin(); it != map_of_table_name_to_table_meta_handler_.end(); it++)
     {
         // 释放TeblaMetaHandler
+        if (it->second)
+            delete it->second;
+    }
+
+    // 遍历存储在map中的HotDataManager
+    for (auto it = map_of_table_name_to_hot_data_manager_.begin(); it != map_of_table_name_to_hot_data_manager_.end(); it++)
+    {
+        // 释放HotDataManager
         if (it->second)
             delete it->second;
     }
@@ -59,10 +65,10 @@ status_code TablesHandler::create(const string &table_directory, const string &t
 
     // 更新map_of_name_and_table_meta_handler_
     string table_meta_path = table_directory + '/' + table_name + ".json";
-    map_of_name_and_table_meta_handler_[table_name] = new TableMetaHandler(table_meta_path, table_meta);
+    map_of_table_name_to_table_meta_handler_[table_name] = new TableMetaHandler(table_meta_path, table_meta);
 
     // 保存表头JSON到磁盘，并返回状态码
-    return map_of_name_and_table_meta_handler_[table_name]->save();
+    return map_of_table_name_to_table_meta_handler_[table_name]->save();
 }
 
 status_code TablesHandler::drop_table(const string &table_name, DatabaseMetaHandler &db_mete_handler)
@@ -85,9 +91,9 @@ status_code TablesHandler::drop_table(const string &table_name, DatabaseMetaHand
     db_mete_handler.save();
 
     // 删除tables_info中的表头数据
-    auto it = map_of_name_and_table_meta_handler_.find(table_name);
-    if (it != map_of_name_and_table_meta_handler_.end())
-        map_of_name_and_table_meta_handler_.erase(it);
+    auto it = map_of_table_name_to_table_meta_handler_.find(table_name);
+    if (it != map_of_table_name_to_table_meta_handler_.end())
+        map_of_table_name_to_table_meta_handler_.erase(it);
 
     // 返回状态码
     return error;
@@ -98,7 +104,7 @@ list<string> TablesHandler::get_all_table_names()
     list<string> all_table_name;
 
     // 遍历map_of_name_and_table_meta_handler的keys
-    for (auto it = map_of_name_and_table_meta_handler_.begin(); it != map_of_name_and_table_meta_handler_.end(); it++)
+    for (auto it = map_of_table_name_to_table_meta_handler_.begin(); it != map_of_table_name_to_table_meta_handler_.end(); it++)
     {
         all_table_name.push_back(it->first);
     }
@@ -108,17 +114,40 @@ list<string> TablesHandler::get_all_table_names()
 const json &TablesHandler::get_table_meta(const string &table_name)
 {
     // 取得表名对应的TableMetaHandler实例
-    auto it = map_of_name_and_table_meta_handler_.find(table_name);
+    auto it = map_of_table_name_to_table_meta_handler_.find(table_name);
 
-    if (it != map_of_name_and_table_meta_handler_.end())
+    if (it != map_of_table_name_to_table_meta_handler_.end())
         // 通过TableMetaHandler实例获得表头信息
         return it->second->get_table_meta();
     else
         return NULL;
 }
 
-TableMetaHandler *&TablesHandler::get_table_meta_handler(const string &table_name)
+inline TableMetaHandler *&TablesHandler::get_table_meta_handler(const string &table_name)
 {
     // 返回表名对应的指向TableMetaHandler实例的指针的引用
-    return map_of_name_and_table_meta_handler_[table_name];
+    return map_of_table_name_to_table_meta_handler_[table_name];
+}
+
+inline HotDataManager *&TablesHandler::get_hot_data_manager(const std::string &table_name)
+{
+    auto it = map_of_table_name_to_hot_data_manager_.find(table_name);
+
+    // 若存在则返回
+    if (it != map_of_table_name_to_hot_data_manager_.end())
+    {
+        return it->second;
+    }
+    // 不存在则创建
+    else
+    {
+        string hot_data_file_path = this->get_table_dir(table_name) + '/' + table_name + ".hot";
+
+        // 打开table_row_handler
+        map_of_table_name_to_hot_data_manager_[table_name] = new HotDataManager(
+            hot_data_file_path,
+            this->get_table_meta_handler(table_name));
+
+        return map_of_table_name_to_hot_data_manager_[table_name];
+    }
 }

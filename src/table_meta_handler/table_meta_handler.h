@@ -85,6 +85,12 @@ public:
     std::vector<uint16_t> &get_off_set_of_each_column();
     std::vector<int8_t> &get_type_of_each_column();
 
+    // 获取主键数量
+    inline int get_primary_key_number();
+
+    // 获取键数量
+    inline int get_key_number();
+
     const std::string get_table_name();
 
     // 获取表元数据的存储路径，只读

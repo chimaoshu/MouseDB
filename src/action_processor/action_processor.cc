@@ -144,6 +144,7 @@ void UserAction::drop_a_table(const string &table_name)
         cout << "table drop error:" << err << '\n';
 }
 
+// 后续append和get_lines都封装到TableHandler里面去，这样TableHandler也不用对外提供TableMetaHandler了
 void UserAction::append(const string &table_name, json &rows_info)
 {
     string database_path = current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb";

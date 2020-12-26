@@ -1,11 +1,11 @@
 #ifndef MOUSEDB_SRC_TABLE_HANDLER_TABLE_HANDLER_H_
 #define MOUSEDB_SRC_TABLE_HANDLER_TABLE_HANDLER_H_
 
-
 #include <string>
 #include <list>
 #include <map>
 
+// json
 #include "third_part/Json/single_include/nlohmann/json.hpp"
 
 // 文件读写
@@ -17,12 +17,13 @@
 // 库元数据管理
 #include "src/database_meta_handler/database_meta_handler.h"
 
+#include "src/hot_data/hot_data.h"
 
 using namespace std;
 using json = nlohmann::json;
 
-
 // 对某个数据库中表的处理，包括表的创建、打开、删除
+// 对于某个表的查询、插入、冷热数据的处理和转化也在这里完成
 // TablesHandler连接起了表元数据与数据库元数据
 // 与TableMetaHandler只管理一个表不同的是，该类管理某个数据库中的所有表
 // 即一个TablesHandler实例将对应一个被打开的数据库
@@ -44,9 +45,18 @@ private:
     // 每次创建TablesHandler都会在此处缓存所有表对应的TableMetaHandler，方便读操作
     // 内容包括：表名及其对应元数据
     // 格式参考format/tables_info.jsonc
-    map<std::string, TableMetaHandler*> map_of_name_and_table_meta_handler_;
+    map<std::string, TableMetaHandler *> map_of_table_name_to_table_meta_handler_;
 
-    // 存储从表名到
+    // 存储从表名到HotDataManager的映射
+    map<std::string, HotDataManager *> map_of_table_name_to_hot_data_manager_;
+
+    // 存储从表名到ColdData的映射
+
+    // 返回对TableMetaHandler指针的引用，之所以要用引用是为了防止指针乱飞，双重释放等问题
+    inline TableMetaHandler *&get_table_meta_handler(const std::string &table_name);
+
+    // 返回对HotDataManager的引用，若不存在，则创建存储后返回，在程序关闭之前不做删除
+    inline HotDataManager *&get_hot_data_manager(const std::string &table_name);
 
 public:
     // 构造函数，传入数据库元数据的JSON信息（databse_meta）
@@ -62,9 +72,6 @@ public:
     // 传入表名、返回对应的table_meta的引用
     // 若不存在，返回NULL
     const json &get_table_meta(const std::string &table_name);
-
-    // 返回对TableMetaHandler的引用
-    TableMetaHandler *&get_table_meta_handler(const std::string &table_name);
 
     // 传入一个表名、获取这个表名对应的表的存储路径
     // 若表不存在，返回空字符串

@@ -12,6 +12,11 @@ TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&tab
       table_meta_(table_meta_handler->get_table_meta())
 
 {
+    // 若文件不存在，则创建；若文件存在，则清空。
+    file_.open(file_path, 1, 0, 1, 0);
+    file_.close();
+
+    // 以读、写、追加方式打开
     file_.open(file_path, 1, 1, 0, 1);
 }
 
@@ -79,7 +84,7 @@ status_code TableRowHandler::write(const T &rows_information)
         // 从1开始
         int column_order = 1;
 
-        // 遍历每一列
+        // 遍历每一个key
         for (auto it = row.begin(); it != row.end(); it++, column_order++)
         {
             // 计算从buffer写入该变量的初始地址

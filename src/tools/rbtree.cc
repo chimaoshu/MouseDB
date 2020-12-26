@@ -25,18 +25,18 @@ void rbtree::add_node(const rbtree_key &key, order_of_row_in_file row_order)
     tree_._M_insert_equal(rbtree_value(key, row_order));
 }
 
-void rbtree::add_node(const list<primary_key_type> &key, order_of_row_in_file row_order)
-{
-    vector<primary_key_type> temp;
-    temp.reserve(key.size());
+// void rbtree::add_node(const list<primary_key_type> &key, order_of_row_in_file row_order)
+// {
+//     vector<primary_key_type> temp;
+//     temp.reserve(key.size());
 
-    for (auto it = key.begin(); it != key.end(); it++)
-    {
-        temp.push_back(*it);
-    }
+//     for (auto it = key.begin(); it != key.end(); it++)
+//     {
+//         temp.push_back(*it);
+//     }
 
-    tree_._M_insert_equal(make_pair(temp, row_order));
-}
+//     tree_._M_insert_equal(make_pair(temp, row_order));
+// }
 
 list<order_of_row_in_file> *rbtree::find_values_by_primary_keys(const rbtree_key &key)
 {
