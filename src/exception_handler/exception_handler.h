@@ -34,7 +34,7 @@ namespace error_code
     const status_code ERROR_TABLE_INFO_NOT_FOUND = 11;
     const status_code ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META = 12;
 
-    // TableHandler
+    // TablesHandler
 
     // DatabaseMetaHandler
     const status_code ERROR_DATABASE_HAS_ALREADY_EXISTS = 31;

@@ -29,15 +29,17 @@ private:
     string db_meta_dir_;
 
     // 当前打开的数据库
-    TableHandler *current_used_database_ = NULL;
+    TablesHandler *current_used_database_ = NULL;
 
+    // 管理数据库元数据
     DatabaseMetaHandler db_meta_handler_;
 
+    // 管理数据库
     DatabaseHandler db_handler_;
 
     // 存储从数据库名到数据库的映射（一个数据库就是一个table_handler）
     // 每当有数据库被打开，那么这里就会多存储一个数据库的信息
-    map<string, TableHandler *> map_of_table_name_to_table_handler_;
+    map<string, TablesHandler *> map_of_table_name_to_table_handler_;
 
 public:
     // 当用户打开了程序，即读取数据库信息

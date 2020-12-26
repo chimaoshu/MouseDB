@@ -20,7 +20,7 @@ inline void read_buffer(const int &type_id, void *&initial_address, nlohmann::js
 {
     if (type_id == N)
     {
-        container.push_back(*(BufferType<N> *)initial_address);
+        container.push_back(*(KeyType<N> *)initial_address);
     }
     else
     {
@@ -43,16 +43,14 @@ inline void read_buffer<0>(const int &type_id, void *&initial_address, nlohmann:
     container.push_back(s);
 }
 
-// template inline void read_buffer<10>(const int &type_id, void *&initial_address, nlohmann::json &container);
-
 // 传入：种类ID、初始写入地址、JSON迭代器（对应列的元素）
 template <int N>
 inline void write_buffer(const int &type_id, void *&initial_address, nlohmann::detail::iter_impl<const nlohmann::json> &it)
 {
     if (type_id == N)
     {
-        BufferType<N> temp = *it;
-        *(BufferType<N> *)initial_address = temp;
+        KeyType<N> temp = *it;
+        *(KeyType<N> *)initial_address = temp;
     }
     else
     {

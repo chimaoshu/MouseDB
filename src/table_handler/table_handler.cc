@@ -4,7 +4,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-TableHandler::TableHandler(const string &database_name, const json &database_meta)
+TablesHandler::TablesHandler(const string &database_name, const json &database_meta)
     : database_meta_(database_meta)
 {
     database_name_ = database_name;
@@ -23,7 +23,7 @@ TableHandler::TableHandler(const string &database_name, const json &database_met
 }
 
 // 释放TeblaMetaHandler
-TableHandler::~TableHandler()
+TablesHandler::~TablesHandler()
 {
     // 遍历map_of_name_and_table_meta_handler_
     for (auto it = map_of_name_and_table_meta_handler_.begin(); it != map_of_name_and_table_meta_handler_.end(); it++)
@@ -34,9 +34,9 @@ TableHandler::~TableHandler()
     }
 }
 
-const string &TableHandler::get_database_name() { return database_name_; }
+const string &TablesHandler::get_database_name() { return database_name_; }
 
-string TableHandler::get_table_dir(const string &table_name)
+string TablesHandler::get_table_dir(const string &table_name)
 {
     // 遍历database_meta_获取
     auto it = database_meta_[database_name_].find(table_name);
@@ -46,7 +46,7 @@ string TableHandler::get_table_dir(const string &table_name)
         return "";
 }
 
-status_code TableHandler::create(const string &table_directory, const string &table_name, json &table_meta, DatabaseMetaHandler &db_mete_handler)
+status_code TablesHandler::create(const string &table_directory, const string &table_name, json &table_meta, DatabaseMetaHandler &db_mete_handler)
 {
     // 创建表文件
     string table_path = table_directory + '/' + table_name + ".mdb";
@@ -65,7 +65,7 @@ status_code TableHandler::create(const string &table_directory, const string &ta
     return map_of_name_and_table_meta_handler_[table_name]->save();
 }
 
-status_code TableHandler::drop_table(const string &table_name, DatabaseMetaHandler &db_mete_handler)
+status_code TablesHandler::drop_table(const string &table_name, DatabaseMetaHandler &db_mete_handler)
 {
     string table_dir = get_table_dir(table_name);
 
@@ -93,7 +93,7 @@ status_code TableHandler::drop_table(const string &table_name, DatabaseMetaHandl
     return error;
 }
 
-list<string> TableHandler::get_all_table_names()
+list<string> TablesHandler::get_all_table_names()
 {
     list<string> all_table_name;
 
@@ -105,7 +105,7 @@ list<string> TableHandler::get_all_table_names()
     return all_table_name;
 }
 
-const json &TableHandler::get_table_meta(const string &table_name)
+const json &TablesHandler::get_table_meta(const string &table_name)
 {
     // 取得表名对应的TableMetaHandler实例
     auto it = map_of_name_and_table_meta_handler_.find(table_name);
@@ -117,7 +117,7 @@ const json &TableHandler::get_table_meta(const string &table_name)
         return NULL;
 }
 
-TableMetaHandler *&TableHandler::get_table_meta_handler(const string &table_name)
+TableMetaHandler *&TablesHandler::get_table_meta_handler(const string &table_name)
 {
     // 返回表名对应的指向TableMetaHandler实例的指针的引用
     return map_of_name_and_table_meta_handler_[table_name];

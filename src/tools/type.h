@@ -102,7 +102,7 @@ public:
 
     ~key_with_type_info()
     {
-        delete (char *)data_;
+        delete[] (char *)data_;
     }
 
     // 在外面先根据code得到种类，然后传进来赋值

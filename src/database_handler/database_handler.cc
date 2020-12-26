@@ -23,7 +23,7 @@ status_code DatabaseHandler::create(const string &database_name)
     return database_meta_handler_.save();
 }
 
-TableHandler *DatabaseHandler::open(const string &database_name)
+TablesHandler *DatabaseHandler::open(const string &database_name)
 {
     auto it = database_meta_.find(database_name);
 
@@ -34,7 +34,7 @@ TableHandler *DatabaseHandler::open(const string &database_name)
     }
     else
     {
-        TableHandler *table_handler = new TableHandler(database_name, database_meta_);
+        TablesHandler *table_handler = new TablesHandler(database_name, database_meta_);
         return table_handler;
     }
 }
@@ -50,7 +50,7 @@ status_code DatabaseHandler::drop(const string &database_name)
     else
     {
         // 实例化一个数据处理类
-        TableHandler table_handler = TableHandler(database_name, database_meta_);
+        TablesHandler table_handler = TablesHandler(database_name, database_meta_);
 
         // 遍历每一个表
         for (auto it = database_meta_[database_name].begin(); it != database_meta_[database_name].end(); it++)

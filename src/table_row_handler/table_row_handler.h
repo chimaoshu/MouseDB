@@ -16,7 +16,7 @@ class TableRowHandler
 private:
     DataFileHandler file_;
 
-    // 这里不能用引用，我不知道为什么，引用会赋值失败s
+    // 这里不能用引用，我不知道为什么，引用会赋值失败
     const std::string table_name_;
 
     // 这里不能用引用，我不知道为什么，莫名其妙会改变，怀疑是内存覆盖

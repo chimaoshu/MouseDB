@@ -83,7 +83,7 @@ void UserAction::use_a_database(const string &database_name)
     }
     else
     {
-        TableHandler *table_handler = db_handler_.open(database_name);
+        TablesHandler *table_handler = db_handler_.open(database_name);
         if (!table_handler)
         {
             cout << "error: fail to open the database, database not exists.\n";

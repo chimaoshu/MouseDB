@@ -1,6 +1,5 @@
 {
     // 我决定把表头json和表的数据内容都存放在以表头命名的同一个文件夹下，这样一个路径就可以完事
-
     // 支持数据类型：
     // uint_8_t
     // uint_16_t
@@ -13,22 +12,22 @@
     // float
     // double
     // char（须指定长度）
-
     // type中出现的类型：int、char、float、double
     "table_name": "表名",
-    "primary_key": [ // 不允许以char类型为primary_key
+    "primary_key": [
+        // 规定主键的类型只能是int32
         {
             "name": "foo",
             "type": "int",
-            "length":-8 // 负号表示sighed，表示int_8_t
+            "length": -32 // 符号表示signed
         },
         {
             "name": "bar",
             "type": "int",
-            "length":32 // 正数表示unsigned，表示uint_32_t
+            "length": -32
         }
     ],
-    "other_keys": [ 
+    "other_keys": [
         {
             "name": "name",
             "type": "float" // float与double无需指定length
@@ -36,7 +35,7 @@
         {
             "name": "score",
             "type": "char",
-            "length":9  // 表示char[9]
+            "length": 9 // 表示char[9]
         }
     ]
 }

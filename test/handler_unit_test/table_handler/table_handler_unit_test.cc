@@ -9,7 +9,7 @@ using namespace std;
 
 using json = nlohmann::json;
 
-class TableHandlerUnitTest
+class TablesHandlerUnitTest
 {
 private:
     string test_dir = string(get_current_dir_name()) + "/test/handler_unit_test/table_handler";
@@ -18,7 +18,7 @@ private:
 
 public:
     // 打开数据库
-    TableHandlerUnitTest()
+    TablesHandlerUnitTest()
         : nothing(remove(test_dir.c_str())),
           ua(UserAction(test_dir))
     {
@@ -37,7 +37,7 @@ public:
         i1 >> meta;
         i1.close();
 
-        // 即TableHandler的create操作
+        // 即TablesHandler的create操作
         ua.create_a_table("student", meta);
     }
 
@@ -52,7 +52,7 @@ public:
         json db_meta;
         i >> db_meta;
 
-        TableHandler th("foo", db_meta);
+        TablesHandler th("foo", db_meta);
         auto list = th.get_all_table_names();
         for (auto it = list.begin(); it != list.end(); it++)
         {
@@ -68,7 +68,7 @@ public:
         ua.print_debug_info();
     }
 
-    ~TableHandlerUnitTest()
+    ~TablesHandlerUnitTest()
     {
         ua.drop_a_database("foo");
     }
@@ -76,7 +76,7 @@ public:
 
 int main()
 {
-    TableHandlerUnitTest a;
+    TablesHandlerUnitTest a;
     a.test_create();
     a.test_get();
     a.test_drop_table();
