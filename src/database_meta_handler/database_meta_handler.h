@@ -13,6 +13,8 @@
 // 异常处理
 #include "src/exception_handler/exception_handler.h"
 
+#include "src/tools/file_helper.h"
+
 
 // 负责数据库元数据的读取、增删、修改与保存
 // 所有其他处出现的数据库元数据JSON对象均来自对该类成员的引用

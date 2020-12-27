@@ -74,6 +74,7 @@ public:
     const json &get_table_meta(const std::string &table_name);
 
     // 传入一个表名、获取这个表名对应的表的存储路径
+    // 所有的冷、热数据的二进制文件都存储在这个dir中
     // 若表不存在，返回空字符串
     std::string get_table_dir(const std::string &table_name);
 

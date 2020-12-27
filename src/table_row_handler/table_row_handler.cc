@@ -3,7 +3,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler)
+TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler, bool truncate=false)
     : file_(1), // 默认缓存n页内容
       table_name_(table_meta_handler->get_table_name()),
       line_size_(table_meta_handler->get_line_size()),
@@ -13,7 +13,12 @@ TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&tab
 
 {
     // 若文件不存在，则创建；若文件存在，则清空。
-    file_.open(file_path, 1, 0, 1, 0);
+    // 情景：1、写入热数据 2、热数据dump为新的冷数据
+    if (truncate)
+        file_.open(file_path, 1, 0, 1, 0);
+    else
+        file_.open(file_path, 1, 0, 0, 0);
+        
     file_.close();
 
     // 以读、写、追加方式打开

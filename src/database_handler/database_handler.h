@@ -13,6 +13,9 @@
 // 异常处理
 #include "src/exception_handler/exception_handler.h"
 
+// 文件目录处理
+#include "src/tools/file_helper.h"
+
 // 管理元数据中描述的所有的数据库，如打开、创建、删除数据库等操作
 // 元数据格式请参考format/database_meta.jsonc
 // 该类实例不应该被释放，直到程序结束

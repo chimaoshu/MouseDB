@@ -1,11 +1,12 @@
 #ifndef MOUSEDB_SRC_ACTION_PROCESSOR_ACTION_PROCESSOR_H_
 #define MOUSEDB_SRC_ACTION_PROCESSOR_ACTION_PROCESSOR_H_
 
-#include <sys/stat.h>
 #include<stdint.h>
 
 #include <iostream>
 #include "third_part/Json/single_include/nlohmann/json.hpp"
+
+#include "src/tools/file_helper.h"
 
 #include "src/exception_handler/exception_handler.h"
 #include "src/data_file_handler/data_file_handler.h"

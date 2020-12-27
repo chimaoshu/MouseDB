@@ -127,7 +127,7 @@ void UserAction::create_a_table(const string &table_name, json &table_meta)
     string default_table_dir = db_meta_dir_ + '/' + current_used_database_->get_database_name() + '/' + table_name;
 
     // 创建文件夹
-    mkdir(default_table_dir.c_str(), S_IRWXU);
+    FileHelper::make_dir(default_table_dir);
 
     // 建表
     status_code err = current_used_database_->create(default_table_dir, table_name, table_meta, db_meta_handler_);

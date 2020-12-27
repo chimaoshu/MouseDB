@@ -6,9 +6,9 @@ using json = nlohmann::json;
 DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir, json &database_meta)
 {
     // data文件夹不存在，则创建
-    if (!access(database_meta_dir.c_str(), 0) == 0)
+    if (!FileHelper::dir_or_file_exists(database_meta_dir))
     {
-        mkdir(database_meta_dir.c_str(), S_IRWXU);
+        FileHelper::make_dir(database_meta_dir);
     }
 
     database_meta_path_ = database_meta_dir + "/db_meta.json";
@@ -18,9 +18,9 @@ DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir, json &
 DatabaseMetaHandler::DatabaseMetaHandler(const string &database_meta_dir)
 {
     // 文件夹不存在，则创建
-    if (!access(database_meta_dir.c_str(), 0) == 0)
+    if (!FileHelper::dir_or_file_exists(database_meta_dir))
     {
-        mkdir(database_meta_dir.c_str(), S_IRWXU);
+        FileHelper::make_dir(database_meta_dir);
     }
 
     database_meta_path_ = database_meta_dir + "/db_meta.json";

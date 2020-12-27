@@ -33,7 +33,8 @@ private:
 public:
     // 打开文件
     // 若打开失败，file.is_open() = false
-    TableRowHandler(const std::string &file_path, TableMetaHandler *&table_meta_handler);
+    // 若truncate为true，打开时如果文件存在，那么会清空内容
+    TableRowHandler(const std::string &file_path, TableMetaHandler *&table_meta_handler, bool truncate=false);
 
     ~TableRowHandler() = default;
 
