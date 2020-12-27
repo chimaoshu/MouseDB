@@ -16,8 +16,8 @@ DatabaseHandler::DatabaseHandler(DatabaseMetaHandler &database_meta_handler, str
 status_code DatabaseHandler::create(const string &database_name)
 {
     string database_dir = database_meta_dir_ + '/' + database_name;
-    if (!FileHelper::dir_or_file_exists(database_dir))
-        FileHelper::make_dir(database_dir);
+    if (!Tools::dir_or_file_exists(database_dir))
+        Tools::make_dir(database_dir);
 
     database_meta_handler_.add_database_in_json(database_name);
     return database_meta_handler_.save();
