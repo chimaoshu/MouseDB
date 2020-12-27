@@ -20,6 +20,12 @@ inline void read_buffer(const int &type_id, void *&initial_address, nlohmann::js
 {
     if (type_id == N)
     {
+        // 取出数据的时候，需要根据数据的类型进行取出
+        // json中也有存储类型相关的数据
+        // 比如int8, in32, int64统一存储为int类型
+        // float, double统一存储为float类型
+        // 取出的时候也可以抛弃原来的类型，全部以int64, uint64, double形式取出
+        // 如果需要节省空间就按照TableMeta中记录的类型信息进行取出
         container.push_back(*(KeyType<N> *)initial_address);
     }
     else

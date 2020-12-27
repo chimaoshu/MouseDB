@@ -53,7 +53,7 @@ public:
     // 调试用JSON、使用换Vector
     // 读取完需要释放内存
     template <class T>
-    T *read(uint32_t &off_set, uint32_t &line_number, std::list<int> wanted_columns);
+    T *read_and_serialize(uint32_t &off_set, uint32_t &line_number, std::list<int> wanted_columns);
 
     // 读取后返回序列化为protobuf的数据
     // TODO
@@ -69,6 +69,15 @@ public:
     // ]
     // 调试用JSON、使用换Vector
     template <class T>
-    status_code write(const T &rows_information);
+    status_code deserialize_and_write(const T &rows_information);
+
+    // 读取一行的数据，返回pair
+    // pair第一个指针指向读取那行的内存
+    // pair第二个指针指向由primary_key构成的vector的内存
+    // 使用完毕需要释放内存
+    pair<void *, rbtree_key *> read_line_and_get_primary_key(
+    order_of_row_in_file num_rows,
+    int num_primary_keys);
+    
 };
 #endif // MOUSEDB_SRC_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_

@@ -3,7 +3,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler, bool truncate=false)
+TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&table_meta_handler, bool truncate = false)
     : file_(1), // 默认缓存n页内容
       table_name_(table_meta_handler->get_table_name()),
       line_size_(table_meta_handler->get_line_size()),
@@ -12,21 +12,25 @@ TableRowHandler::TableRowHandler(const string &file_path, TableMetaHandler *&tab
       table_meta_(table_meta_handler->get_table_meta())
 
 {
-    // 若文件不存在，则创建；若文件存在，则清空。
-    // 情景：1、写入热数据 2、热数据dump为新的冷数据
     if (truncate)
+        // 若文件不存在，则创建；若文件存在，则清空。
+        // 情景：1、写入热数据 2、热数据dump为新的冷数据
         file_.open(file_path, 1, 0, 1, 0);
     else
         file_.open(file_path, 1, 0, 0, 0);
-        
+
     file_.close();
 
     // 以读、写、追加方式打开
     file_.open(file_path, 1, 1, 0, 1);
+
+    // g游标一开始会处于文件头部，方便按顺序读
+    // p游标会始终处于文件尾部，方便追加
+    file_.move_g_cursor_to_the_beginning();
 }
 
 template <class T>
-T *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns)
+T *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns)
 {
     pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_, line_size_, line_number);
 
@@ -64,7 +68,7 @@ T *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wan
 }
 
 template <class T>
-status_code TableRowHandler::write(const T &rows_information)
+status_code TableRowHandler::deserialize_and_write(const T &rows_information)
 {
     // 行数目
     int rows_number = rows_information.size();
@@ -111,10 +115,45 @@ status_code TableRowHandler::write(const T &rows_information)
     return code;
 }
 
+// 读取一行的数据，返回pair
+// pair第一个指针指向读取那行的内存
+// pair第二个指针指向由primary_key构成的vector的内存
+// 使用完毕需要释放内存
+pair<void *, rbtree_key *> TableRowHandler::read_line_and_get_primary_key(
+    order_of_row_in_file num_rows,
+    int num_primary_keys)
+{
+    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(0, 1, num_rows, true);
+
+    // 可用行数为0，表示读取到文件末尾了，结束了
+    if (buffer_info.second == 0)
+        return pair<void *, rbtree_key *>(NULL, NULL);
+
+    // 内存的起始地址
+    void *buffer_pointer = buffer_info.first;
+
+    // 容纳主键的容器
+    rbtree_key *new_keys = new rbtree_key;
+
+    // key的读取地址
+    void *key_address = buffer_pointer;
+
+    // 读取前面几行primary key
+    for (int i = 0; i < num_primary_keys; i++)
+    {
+        // 读取并加入容器
+        new_keys->push_back(*(primary_key_type *)key_address);
+
+        // 移动到下一变量的读取位置
+        key_address = key_address + sizeof(primary_key_type);
+    }
+
+    return pair<void *, rbtree_key *>(buffer_pointer, new_keys);
+}
+
 // 特化
+template json *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
+template list<json> *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
 
-template json *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
-template list<json> *TableRowHandler::read(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
-
-template status_code TableRowHandler::write(const list<json> &rows_information);
-template status_code TableRowHandler::write(const json &rows_information);
+template status_code TableRowHandler::deserialize_and_write(const list<json> &rows_information);
+template status_code TableRowHandler::deserialize_and_write(const json &rows_information);
