@@ -267,10 +267,16 @@ void DataFileHandler::LRU_delete(uint32_t order_of_page_to_delete)
 // 把lines读进缓存中，返回指向缓存的指针与可用的行数（防止越界）
 // 若创建内存失败，返回空指针
 pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
-    const uint64_t &start_position,
+    uint64_t start_position,
     const int &line_size,
-    const int &number_of_line)
+    const int &number_of_line,
+    bool begin_at_the_current_cursor=false)
 {
+    // 从游标当前位置开始，适合顺序读的情景
+    // 比如冷热数据归并时的情景
+    if (begin_at_the_current_cursor)
+        start_position = file_.tellg();
+
     if (start_position >= file_size_)
     {
         return pair<void *, int>(NULL, 0);

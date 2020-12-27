@@ -96,11 +96,14 @@ public:
     status_code append(void *buffer, int buffer_size);
 
     // 从initial_adress开始，以每行line_size的大小，读number_of_line行
+    // 若begin_at_the_current_cursor=true，则不是从initial_adress开始
+    // 而是从上次游标的位置开始，即：不进行游标g的seek移动操作
     // 返回指向内存的指针与读取到的可用行数
     std::pair<void *, uint32_t> read_lines_into_buffer(
-        const uint64_t &start_position,
+        uint64_t start_position,
         const int &line_size,
-        const int &number_of_line);
+        const int &number_of_line,
+        bool begin_at_the_current_cursor=false);
 
     // 读取一行字符串，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
