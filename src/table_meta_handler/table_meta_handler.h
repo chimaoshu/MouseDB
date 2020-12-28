@@ -1,11 +1,10 @@
 #ifndef MOUSEDB_SRC_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 #define MOUSEDB_SRC_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 
-
 #include <string>
 #include <fstream>
 #include <map>
-#include<list>
+#include <list>
 
 // json解析库
 #include "third_part/Json/single_include/nlohmann/json.hpp"
@@ -13,7 +12,6 @@
 // 文件读写
 #include "src/data_file_handler/data_file_handler.h"
 #include "src/exception_handler/exception_handler.h"
-
 
 // 处理表头的类：
 // 每个表头都需要实例化该类一次进行管理（即一个表头对应一个实例）
@@ -30,7 +28,6 @@
 class TableMetaHandler
 {
 private:
-
     // 表元数据
     nlohmann::json table_meta_;
 
@@ -50,7 +47,7 @@ private:
 
     // 用数组来存储每列的key种类，首元素存储长度
     // 当首次获取时会进行计算并赋值
-    // 后续获取时会直接读取    
+    // 后续获取时会直接读取
     // 1:int_8_t
     // 2:int_16_t
     // 3:int_32_t
@@ -77,7 +74,6 @@ private:
     status_code load();
 
 public:
-
     // 以下三个函数：
     // 当首次调用时会进行计算并赋值
     // 后续调用时会直接读取
@@ -99,6 +95,48 @@ public:
     // 获取表元数据，只读
     const nlohmann::json &get_table_meta();
 
+    // ==========================================
+
+    // 获取正在使用的热数据文件名，若不存在返回空字符串
+    // 只用于hot-dump
+    const std::string get_current_used_hot_data_file_name();
+
+    // 获取新的热数据文件名，若不存在返回空字符串
+    // 只用于hot-dump
+    const std::string get_new_hot_data_file_name();
+
+    // ==========================================
+
+    // 获取正在使用的冷数据文件名，若不存在返回空字符串
+    // 只用于hot-dump
+    const std::string get_current_used_cold_data_file_name();
+
+    // 获取新的冷数据文件名，若不存在返回空字符串
+    // 只用于hot-dump
+    const std::string get_new_cold_data_file_name();
+
+    // ==========================================
+
+    // 设置新的热数据文件名，需要手动使用save保存到磁盘
+    // 用于hot-dump的switch阶段
+    void set_new_hot_data_file_name(const std::string &new_hot_data_file_name);
+
+    // 设置新的冷数据current_used，并将其添加到history中
+    // 用于hot-dump的switch阶段
+    void set_new_cold_data_file_name(const std::string &new_cold_data_file_name);
+
+    // ==========================================
+
+    // 让新的热数据文件转正，需要手动save保存到磁盘
+    // 用于hot-dump的switch阶段
+    void change_new_hot_data_file_to_current_used();
+
+    // 让新的冷数据文件转正，需要手动save保存到磁盘
+    // 用于hot-dump的switch阶段
+    void change_new_cold_data_file_to_current_used();
+
+    // ==========================================
+
     // TableMetaHandler() = delete;
 
     // 传入表头路径，通过load函数读取表头数据进行构造
@@ -114,6 +152,6 @@ public:
     status_code save();
 
     // 传入列名，获取对应的列序号并从小到大排序返回
-    std::list<int> get_column_orders_by_names(const std::list<std::string>&column_names);
+    std::list<int> get_column_orders_by_names(const std::list<std::string> &column_names);
 };
 #endif // MOUSEDB_SRC_TABLE_META_HANDLER_H_

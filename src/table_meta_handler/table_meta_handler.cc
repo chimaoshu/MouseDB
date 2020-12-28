@@ -1,6 +1,5 @@
 #include "table_meta_handler.h"
 
-
 using namespace std;
 using json = nlohmann::json;
 
@@ -29,18 +28,100 @@ inline int TableMetaHandler::get_primary_key_number()
     return table_meta_["primary_key"].size();
 }
 
+const string TableMetaHandler::get_current_used_hot_data_file_name()
+{
+    auto it = table_meta_["hot_data"].find("current_used");
+
+    assert(it != table_meta_["hot_data"].end());
+
+    if (*it == NULL)
+        return "";
+    else
+        return *it;
+}
+
+const string TableMetaHandler::get_new_hot_data_file_name()
+{
+    auto it = table_meta_["hot_data"].find("new");
+
+    assert(it != table_meta_["hot_data"].end());
+
+    if (*it == NULL)
+        return "";
+    else
+        return *it;
+}
+
+const std::string TableMetaHandler::get_current_used_cold_data_file_name()
+{
+    auto it = table_meta_["cold_data"].find("current_used");
+
+    assert(it != table_meta_["cold_data"].end());
+
+    if (*it == NULL)
+        return "";
+    else
+        return *it;
+}
+
+const std::string TableMetaHandler::get_new_cold_data_file_name()
+{
+    auto it = table_meta_["cold_data"].find("new");
+
+    assert(it != table_meta_["cold_data"].end());
+
+    if (*it == NULL)
+        return "";
+    else
+        return *it;
+}
+
+void TableMetaHandler::set_new_hot_data_file_name(const string &new_hot_data_file_name)
+{
+    table_meta_["hot_data"]["new"] = new_hot_data_file_name;
+}
+
+void TableMetaHandler::set_new_cold_data_file_name(const string &new_cold_data_file_name)
+{
+    table_meta_["cold_data"]["new"] = new_cold_data_file_name;
+}
+
+void TableMetaHandler::change_new_hot_data_file_to_current_used()
+{
+    // 顶替current_used
+    string new_hot_data_file_name = table_meta_["hot_data"]["new"];
+    table_meta_["hot_data"]["current_used"] = new_hot_data_file_name;
+
+    // 原来位置还原为null
+    table_meta_["hot_data"]["new"] = NULL;
+}
+
+void TableMetaHandler::change_new_cold_data_file_to_current_used()
+{
+    // 顶替current_used
+    string new_cold_data_file_name = table_meta_["cold_data"]["new"];
+    table_meta_["cold_data"]["current_used"] = new_cold_data_file_name;
+
+    // 原来位置还原为null
+    table_meta_["cold_data"]["new"] = NULL;
+
+    // 添加到history中
+    table_meta_["cold_data"]["history"].push_back(new_cold_data_file_name);
+}
+
 // 通过load读取对应路径下元数据
 TableMetaHandler::TableMetaHandler(const string &table_meta_path)
-:table_meta_path_(table_meta_path)
+    : table_meta_path_(table_meta_path)
 {
-    load(); 
+    load();
 }
 
 // 直接传入元数据
 TableMetaHandler::TableMetaHandler(const string &table_meta_path, json &table_meta)
-    :table_meta_(table_meta),
-    table_meta_path_(table_meta_path)
-{}
+    : table_meta_(table_meta),
+      table_meta_path_(table_meta_path)
+{
+}
 
 // 传入存储路径
 status_code TableMetaHandler::save(const string &table_meta_path)
@@ -84,7 +165,7 @@ status_code TableMetaHandler::load()
     {
         // 返回错误码
         return p.second;
-    } 
+    }
 }
 
 uint16_t TableMetaHandler::get_line_size()
@@ -238,7 +319,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         map_from_column_name_to_column_order_[(*it)["name"]] = i - 1;
 
         // 加上当前key的类型对应的size
-        line_size_ += size_of_var > 0 ? size_of_var:-size_of_var;
+        line_size_ += size_of_var > 0 ? size_of_var : -size_of_var;
 
         // 第i个元素的地址偏移就等于前i-1个元素的size之和
         off_set_of_each_column_[i] = line_size_;
@@ -298,7 +379,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         map_from_column_name_to_column_order_[(*it)["name"]] = i - 1;
 
         // 加上当前key的类型对应的size
-        line_size_ += size_of_var > 0 ? size_of_var:-size_of_var;
+        line_size_ += size_of_var > 0 ? size_of_var : -size_of_var;
 
         // 第i个元素的地址偏移就等于前i-1个元素的size之和
         off_set_of_each_column_[i] = line_size_;

@@ -13,7 +13,43 @@
     // double
     // char（须指定长度）
     // type中出现的类型：int、char、float、double
+
     "table_name": "表名",
+
+    "hot_data": {
+        
+        // 正在使用的热数据文件
+        // 文件名是时间戳，当数据库正常退出时，值为null。
+        // 若数据库开启时，该值不为null，说明上次数据库非正常退出
+        // 那么需要重新读取数据，构建红黑树
+        "current_used": "1231233.hot",
+
+        // 在非hot-dump时期，该值为null
+        // 在hot-dump时期，该值指向新的热数据文件
+        // 该热数据文件会记录hot-dump时期到来的数据
+        // 当hot-dump结束时，该值会成为上面的current_used的值
+        // 然后new值恢复为null
+        "new": "1231999.hot"
+    },
+    "cold_data": {
+        "current_used": "1212331.mdb",
+        
+        // 在非hot-dump时期，该值为null
+        // 在hot-dump时期，该值指向新的热数据文件
+        // 该热数据文件会记录hot-dump时期到来的数据
+        // 当hot-dump结束时，该值会成为上面的current_used的值
+        // 然后new值恢复为null
+        "new": "1212349.mdb",
+        "history": [
+
+            // 历史记录（包括正在使用的文件）
+            // 文件名是时间戳
+            // 记录历史文件可以实现数据库回滚的功能
+            "1212331.mdb",
+            "1212312.mdb",
+            "1212321.mdb"
+        ]
+    },
     "primary_key": [
         // 规定主键的类型只能是int32
         {
