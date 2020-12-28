@@ -9,8 +9,7 @@
 #include "src/table_meta_handler/table_meta_handler.h"
 #include "src/data_file_handler/data_file_handler.h"
 #include "src/table_row_handler/buffer_reader_and_writer.h"
-#include "src/hot_data/hot_data.h"
-
+#include "src/cold_hot_data/hot_data.h"
 
 class TableRowHandler
 {
@@ -28,13 +27,19 @@ private:
     const std::vector<int8_t> &type_of_each_column_;
 
     // 对TableMetaHandler成员的引用
-    const nlohmann::json &table_meta_;
+    // const nlohmann::json &table_meta_;
+
+    // primary_key数量
+    int primary_key_number_;
 
 public:
     // 打开文件
     // 若打开失败，file.is_open() = false
-    // 若truncate为true，打开时如果文件存在，那么会清空内容
-    TableRowHandler(const std::string &file_path, TableMetaHandler *&table_meta_handler, bool truncate=false);
+    // 若truncate为true，打开时如果文件存在，那么会清空内容，适用于创建一个新文件写入的场景
+    TableRowHandler(const std::string &file_path,
+                    TableMetaHandler *&table_meta_handler,
+                    bool truncate = false,
+                    uint8_t cache_pages = 0);
 
     ~TableRowHandler() = default;
 
@@ -75,9 +80,24 @@ public:
     // pair第一个指针指向读取那行的内存
     // pair第二个指针指向由primary_key构成的vector的内存
     // 使用完毕需要释放内存
-    pair<void *, rbtree_key *> read_line_and_get_primary_key(
-    order_of_row_in_file num_rows,
-    int num_primary_keys);
-    
+    // 适用于冷热数据归并时的旧冷数据文件
+    inline pair<void *, rbtree_key *> read_next_row();
+
+    // 读取下一行，返回红黑树的节点pair<rbtree_key, uint32>
+    // 适用于宕机后从热数据文件中恢复数据，建立有序索引
+    inline rbtree_key *read_next_row_index();
+
+    // 给定数据在第几行，直接读取那一行的数据，返回指针
+    // 适用于冷热数据归并时的旧热数据文件
+    inline void *read_line(order_of_row_in_file line_order);
+
+    // 从当前游标位置开始，一直读到文件末尾
+    // 适用于冷热数据归并时的旧冷数据文件
+    // 返回内存与行数
+    pair<void *, uint32_t> TableRowHandler::read_to_the_end();
+
+    // 把数据写入下一行，默认写入一行
+    // 适用于冷热数据归并时的新冷数据文件
+    inline void write_rows(void *buffer, order_of_row_in_file line_number = 1);
 };
 #endif // MOUSEDB_SRC_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_

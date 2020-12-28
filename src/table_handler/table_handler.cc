@@ -151,3 +151,53 @@ inline HotDataManager *&TablesHandler::get_hot_data_manager(const std::string &t
         return map_of_table_name_to_hot_data_manager_[table_name];
     }
 }
+
+inline void TablesHandler::set_hot_data_manager_in_map(const string &table_name, HotDataManager *new_hot_data_manager)
+{
+    map_of_table_name_to_hot_data_manager_[table_name] = new_hot_data_manager;
+}
+
+status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
+{
+    // 运行在子线程中
+
+    // 获取旧的HotDataManager
+    HotDataManager *old_hot_data_manager = get_hot_data_manager(table_name);
+
+    // 进行hot-dump操作，生成新的热数据文件、冷数据文件，返回新的HotDataManager
+    HotDataManager *new_hot_data_manager = old_hot_data_manager->dump_to_cold_data();
+
+    // 生成新的ColdDataManager
+    // TODO
+
+    // 获取现在table对应的TableMetaHandler
+    TableMetaHandler *current_table_meta_handler = get_table_meta_handler(table_name);
+
+    // 进入切换模式
+
+    // 1、把HotDataManager的is_switching改为true
+    // 此时暂停查询操作，把查询请求缓存到消息队列中
+    old_hot_data_manager->change_to_switch_mode();
+
+    // 2、更改TableMeta指向的现用数据库的内容
+    // 并把转正的冷数据添加到历史版本，并保存到磁盘
+    current_table_meta_handler->change_new_hot_data_file_to_current_used();
+    current_table_meta_handler->change_new_cold_data_file_to_current_used();
+    current_table_meta_handler->save();
+
+    // 3、修改表名对应的ColdDataManger为缓存的ColdDataManager，并删除旧的manager
+    // TODO
+
+    // 4、修改表名对应的HotDataManger为缓存的HotDataManager，并删除旧的manager
+    // 此时查询操作来的时候，检查到新HotDataManager的is_switching为false
+    // 此时又可以进行查询操作了，并且使用新一套的HotDataManger和ColdDataManger进行查询了
+    delete old_hot_data_manager;
+    this->set_hot_data_manager_in_map(table_name, new_hot_data_manager);
+
+    return error_code::SUCCESS;
+}
+
+status_code TablesHandler::dump_table(const string &table_name)
+{
+
+}

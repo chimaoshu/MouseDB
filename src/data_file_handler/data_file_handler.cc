@@ -107,6 +107,12 @@ status_code DataFileHandler::append(const string &string_to_write)
     return error_code::SUCCESS;
 }
 
+// 移动游标到文件头，适合接下来进行顺序读
+void DataFileHandler::move_g_cursor_to_the_beginning()
+{
+    file_.seekg(0, ios::beg);
+}
+
 // 文件尾追加二进制数据
 status_code DataFileHandler::append(void *buffer, int buffer_size)
 {
@@ -118,7 +124,7 @@ status_code DataFileHandler::append(void *buffer, int buffer_size)
 
     file_.write((char *)buffer, buffer_size);
 
-    // 删除LRU缓存中刚更新的这一页，即最后一页
+    // 删除LRU缓存中刚更新的这一页，即最后一页，因为缓存失效
     int end_position = file_.tellp();
     int order_of_last_page = end_position / page_size_;
     LRU_delete(order_of_last_page);
@@ -270,7 +276,8 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     uint64_t start_position,
     const int &line_size,
     const int &number_of_line,
-    bool begin_at_the_current_cursor=false)
+    bool begin_at_the_current_cursor=false,
+    bool read_to_the_end)
 {
     // 从游标当前位置开始，适合顺序读的情景
     // 比如冷热数据归并时的情景
@@ -285,7 +292,8 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     uint32_t available_lines;
 
     // 比较：读完所有内容后的位置 和 文件字节数 的大小关系（取等号意味着刚刚好读完）
-    if (start_position + line_size * number_of_line > file_size_)
+    // 或者read_to_the_end = true，也适用于这种情况
+    if (read_to_the_end || start_position + line_size * number_of_line > file_size_)
     {
         // 计算可读行数目
         available_lines = (file_size_ - start_position) / line_size;

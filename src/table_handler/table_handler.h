@@ -17,7 +17,7 @@
 // 库元数据管理
 #include "src/database_meta_handler/database_meta_handler.h"
 
-#include "src/hot_data/hot_data.h"
+#include "src/cold_hot_data/hot_data.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -51,12 +51,20 @@ private:
     map<std::string, HotDataManager *> map_of_table_name_to_hot_data_manager_;
 
     // 存储从表名到ColdData的映射
+    // TODO
 
     // 返回对TableMetaHandler指针的引用，之所以要用引用是为了防止指针乱飞，双重释放等问题
     inline TableMetaHandler *&get_table_meta_handler(const std::string &table_name);
 
     // 返回对HotDataManager的引用，若不存在，则创建存储后返回，在程序关闭之前不做删除
     inline HotDataManager *&get_hot_data_manager(const std::string &table_name);
+
+    // 传入表名，修改对应map里面的HotDataManager为新的
+    inline void set_hot_data_manager_in_map(const string&table_name, HotDataManager *new_hot_data_manager);
+
+    inline void set_cold_data_manager_in_map();
+
+    status_code dump_table_in_sub_thread(const string &table_name);
 
 public:
     // 构造函数，传入数据库元数据的JSON信息（databse_meta）
@@ -65,6 +73,9 @@ public:
     TablesHandler(const std::string &database_name_, const json &database_meta);
 
     ~TablesHandler();
+
+    // 对某个table进行hot-dump操作
+    status_code dump_table(const string &table_name);
 
     // 获得数据库名
     const std::string &get_database_name();

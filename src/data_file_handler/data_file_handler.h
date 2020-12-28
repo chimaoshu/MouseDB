@@ -84,6 +84,9 @@ public:
     // read：可读
     status_code open(const std::string &file_path, bool write = 1, bool append = 0, bool truncate = 0, bool read = 0);
 
+    // 移动游标到文件头，适合接下来进行顺序读
+    void move_g_cursor_to_the_beginning();
+
     bool is_open();
 
     // 关闭file_，但不析构，可以重新open。
@@ -99,11 +102,13 @@ public:
     // 若begin_at_the_current_cursor=true，则不是从initial_adress开始
     // 而是从上次游标的位置开始，即：不进行游标g的seek移动操作
     // 返回指向内存的指针与读取到的可用行数
+    // read_to_the_end=true 直接读到文件末尾
     std::pair<void *, uint32_t> read_lines_into_buffer(
         uint64_t start_position,
         const int &line_size,
         const int &number_of_line,
-        bool begin_at_the_current_cursor=false);
+        bool begin_at_the_current_cursor=false,
+        bool read_to_the_end=false);
 
     // 读取一行字符串，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
