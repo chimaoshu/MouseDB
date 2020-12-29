@@ -32,10 +32,19 @@ TableRowHandler::TableRowHandler(const string &file_path,
     file_.move_g_cursor_to_the_beginning();
 }
 
+inline order_of_row_in_file TableRowHandler::get_number_of_rows_in_file()
+{
+    uint64_t file_size = file_.get_file_size();
+    assert(file_size % line_size_ == 0);
+    return file_size / line_size_;
+}
+
 template <class T>
 T *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns)
 {
-    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_, line_size_, line_number);
+    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_,
+                                                                      line_size_,
+                                                                      line_number);
 
     T *rows = new T;
 
@@ -153,12 +162,26 @@ inline pair<void *, rbtree_key *> TableRowHandler::read_next_row()
     return pair<void *, rbtree_key *>(buffer_pointer, new_keys);
 }
 
-
 // 读取下一行，返回红黑树的节点pair<rbtree_key, uint32>
 // 适用于宕机后从热数据文件中恢复数据，建立有序索引
-inline rbtree_key *TableRowHandler::read_next_row_index()
+inline rbtree_key *TableRowHandler::read_row_index(int row_order = -1)
 {
-    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(0, line_size_, 1, true);
+    pair<void *, uint32_t> buffer_info;
+
+    // 传入参数小于0，表明往下读一行
+    if (row_order < 0)
+    {
+        buffer_info = file_.read_lines_into_buffer(0, line_size_, true, false);
+    }
+
+    // 传入参数不小于0，表示读某一行
+    else
+    {
+        buffer_info = file_.read_lines_into_buffer(
+            (row_order - 1) * line_size_,
+            line_size_,
+            1);
+    }
 
     // 可用行数为0，表示读取到文件末尾了，结束了
     if (buffer_info.second == 0)
@@ -185,7 +208,7 @@ inline rbtree_key *TableRowHandler::read_next_row_index()
     }
 
     // 释放
-    delete[] (char *)buffer_pointer;
+    delete[](char *) buffer_pointer;
 
     return new_keys;
 }

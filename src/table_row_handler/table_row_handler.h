@@ -43,6 +43,9 @@ public:
 
     ~TableRowHandler() = default;
 
+    // 获取文件中的行数量，冷数据文件建立索引时需要用到
+    inline order_of_row_in_file get_number_of_rows_in_file();
+
     // 传入：偏移行数、要读行数、想要的列
     // 从第off_set+1行开始读（比如off_set=0时，从第一行开始读），读line_number行中wanted_columns
     // 其中wanted_columns的格式参考type_of_each_column_，传入的是id，不要越界
@@ -83,9 +86,12 @@ public:
     // 适用于冷热数据归并时的旧冷数据文件
     inline pair<void *, rbtree_key *> read_next_row();
 
-    // 读取下一行，返回红黑树的节点pair<rbtree_key, uint32>
+    // 读取某行，返回红黑树的主键
+    // 当row_order为负数时，表明读下一行（不进行指针移动操作），默认为该情况
     // 适用于宕机后从热数据文件中恢复数据，建立有序索引
-    inline rbtree_key *read_next_row_index();
+    // 当row_order不小于0时，表明读给定行号的一行
+    // 适用于冷数据建立索引时的情况
+    inline rbtree_key *read_row_index(int row_order = -1);
 
     // 给定数据在第几行，直接读取那一行的数据，返回指针
     // 适用于冷热数据归并时的旧热数据文件
