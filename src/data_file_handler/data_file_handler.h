@@ -74,6 +74,9 @@ public:
     // 返回文件路径
     std::string get_path();
 
+    // 获取文件大小s
+    inline uint64_t get_file_size();
+
     // 给成员变量file_赋值
     // 若不可读，那么在文件不存在时，就会创建文件
     // 若可读和可写同时出现，那么没有创建属性

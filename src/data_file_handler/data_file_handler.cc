@@ -91,6 +91,12 @@ status_code DataFileHandler::open(const string &file_path, bool write, bool appe
     return error_code::SUCCESS;
 }
 
+inline uint64_t DataFileHandler::get_file_size()
+{
+    file_.seekp(0, ios::end);
+    return file_.tellp();
+}
+
 bool DataFileHandler::is_open() { return file_.is_open(); }
 
 // 文件尾追加字符串
