@@ -33,8 +33,15 @@ private:
     const string &table_dir_;
 
 public:
-    // 最后一个参数：是否为hot_dump创建的，如果是hot-dump创建的，则不考虑对TableMeta进行检查
-    // 如果不是hot-dump创建的，说明是数据库第一次打开，那么需要见查看TableMeta看热数据是否已经全部转化为冷数据
+    // table_dir: 表格所在目录
+    // table_meta_handler: 表对应的元数据处理类
+    // hot_dump: 是否为hot_dump过程创建的临时HotDataManager，如果是，则不考虑对TableMeta进行检查
+    // 如果不是hot-dump创建的，说明是数据库第一次打开，那么需要对TableMeta进行检查，检查如下：
+    // 1、如果程序正常关闭，会把所有热数据全部dump成冷数据再关闭，此时会把TableMeta中的“正在使用热数据文件”字段置为null。
+    //    那么程序会新建一个新的热数据文件。
+    // 2、如果打开TableMeta发现“正在使用热数据文件”不为null，说明上次意外地被关闭了，所以需要读取热数据文件恢复内存中的索引。
+    // 3、如果打开TableMeta发现“正在使用热数据文件”不为null，并且“新数据”也不为空，说明上次是再hot-dump的过程中意外关闭，
+    //    那么首先要把dump失败的数据dump完（这里使用主线程，不用子线程），然后再恢复“新数据文件”在内存中的索引，并把它转正。
     HotDataManager(const string &table_dir, TableMetaHandler *&table_meta_handler, bool hot_dump = false);
 
     ~HotDataManager();

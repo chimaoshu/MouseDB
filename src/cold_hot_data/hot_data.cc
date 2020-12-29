@@ -30,6 +30,9 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
         table_meta_handler_->set_new_hot_data_file_name(timestamp + ".hot");
         table_meta_handler_->save();
 
+        // 记录热数据文件中总共有多少行数据
+        row_number_in_hot_data_file_ = 0;
+
         return;
     }
     // 如果上次关闭程序时异常，那么current_used_hot_data_file_path不为空
@@ -43,16 +46,16 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
             // 开一个TableRowHandler把hot文件中的数据全部读到红黑树，不销毁，进行预读
             current_used_hot_data_file_ = new TableRowHandler(current_used_hot_data_file_path, table_meta_handler_, 0, 1);
 
+            // 记录热数据文件中有多少行数据
+            row_number_in_hot_data_file_ = 0;
+
             // 读取下一行的rbtree_key
-            order_of_row_in_file row_order = 1;
             rbtree_key *next_row_key = current_used_hot_data_file_->read_next_row_index();
 
             // 循环写入红黑树
             while (next_row_key != NULL)
             {
-                this->add_node(*next_row_key, row_order);
-                row_order++;
-
+                this->add_node(*next_row_key, ++row_number_in_hot_data_file_);
                 next_row_key = current_used_hot_data_file_->read_next_row_index();
             }
 
@@ -68,16 +71,17 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
             TableRowHandler data_file_to_dump(current_used_hot_data_file_path, table_meta_handler_, 0, 1);
 
             // 读到红黑树中
+
+            // 记录热数据文件中有几行数据
+            row_number_in_hot_data_file_ = 0;
+
             // 读取下一行的rbtree_key
-            order_of_row_in_file row_order = 1;
             rbtree_key *next_row_key = data_file_to_dump.read_next_row_index();
 
             // 循环写入红黑树
             while (next_row_key != NULL)
             {
-                this->add_node(*next_row_key, row_order);
-                row_order++;
-
+                this->add_node(*next_row_key, ++row_number_in_hot_data_file_);
                 next_row_key = data_file_to_dump.read_next_row_index();
             }
 
@@ -95,15 +99,14 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
 
             // 把“新热数据文件”读取到内存中的红黑树索引
 
-            row_order = 1;
+            // 新的热数据文件，有0行数据
+            row_number_in_hot_data_file_ = 0;
             next_row_key = current_used_hot_data_file_->read_next_row_index();
 
             // 循环写入红黑树
             while (next_row_key != NULL)
             {
-                this->add_node(*next_row_key, row_order);
-                row_order++;
-
+                this->add_node(*next_row_key, ++row_number_in_hot_data_file_);
                 next_row_key = current_used_hot_data_file_->read_next_row_index();
             }
 
