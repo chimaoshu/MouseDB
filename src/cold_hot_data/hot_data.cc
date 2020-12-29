@@ -50,13 +50,13 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
             row_number_in_hot_data_file_ = 0;
 
             // 读取下一行的rbtree_key
-            rbtree_key *next_row_key = current_used_hot_data_file_->read_next_row_index();
+            rbtree_key *next_row_key = current_used_hot_data_file_->read_row_index();
 
             // 循环写入红黑树
             while (next_row_key != NULL)
             {
                 this->add_node(*next_row_key, ++row_number_in_hot_data_file_);
-                next_row_key = current_used_hot_data_file_->read_next_row_index();
+                next_row_key = current_used_hot_data_file_->read_row_index();
             }
 
             return;
@@ -76,13 +76,13 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
             row_number_in_hot_data_file_ = 0;
 
             // 读取下一行的rbtree_key
-            rbtree_key *next_row_key = data_file_to_dump.read_next_row_index();
+            rbtree_key *next_row_key = data_file_to_dump.read_row_index();
 
             // 循环写入红黑树
             while (next_row_key != NULL)
             {
                 this->add_node(*next_row_key, ++row_number_in_hot_data_file_);
-                next_row_key = data_file_to_dump.read_next_row_index();
+                next_row_key = data_file_to_dump.read_row_index();
             }
 
             // 生成冷数据文件，此时冷数据文件已经被设置为new
@@ -101,13 +101,13 @@ HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table
 
             // 新的热数据文件，有0行数据
             row_number_in_hot_data_file_ = 0;
-            next_row_key = current_used_hot_data_file_->read_next_row_index();
+            next_row_key = current_used_hot_data_file_->read_row_index();
 
             // 循环写入红黑树
             while (next_row_key != NULL)
             {
                 this->add_node(*next_row_key, ++row_number_in_hot_data_file_);
-                next_row_key = current_used_hot_data_file_->read_next_row_index();
+                next_row_key = current_used_hot_data_file_->read_row_index();
             }
 
             // 把“新热数据”，也就是我们刚刚把索引读进内存的热数据文件设置为“正常使用”
