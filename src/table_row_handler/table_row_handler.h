@@ -2,14 +2,14 @@
 #define MOUSEDB_SRC_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_
 
 // for debug
-#include <iostream>
+// #include <iostream>
 
 #include "third_part/Json/single_include/nlohmann/json.hpp"
 
 #include "src/table_meta_handler/table_meta_handler.h"
 #include "src/data_file_handler/data_file_handler.h"
 #include "src/table_row_handler/buffer_reader_and_writer.h"
-#include "src/cold_hot_data/hot_data.h"
+#include "src/tools/rbtree.h"
 
 class TableRowHandler
 {
@@ -44,7 +44,7 @@ public:
     ~TableRowHandler() = default;
 
     // 获取文件中的行数量，冷数据文件建立索引时需要用到
-    inline order_of_row_in_file get_number_of_rows_in_file();
+    inline row_order get_number_of_rows_in_file();
 
     // 传入：偏移行数、要读行数、想要的列
     // 从第off_set+1行开始读（比如off_set=0时，从第一行开始读），读line_number行中wanted_columns
@@ -84,7 +84,12 @@ public:
     // pair第二个指针指向由primary_key构成的vector的内存
     // 使用完毕需要释放内存
     // 适用于冷热数据归并时的旧冷数据文件
-    inline pair<void *, rbtree_key *> read_next_row();
+    inline std::pair<void *, rbtree_key *> read_next_row_buffer_and_index();
+
+    // 从当前游标位置开始，一直读到文件末尾
+    // 适用于冷热数据归并时的旧冷数据文件
+    // 返回内存与行数
+    inline std::pair<void *, uint32_t> read_buffer_and_index_to_the_end();
 
     // 读取某行，返回红黑树的主键
     // 当row_order为负数时，表明读下一行（不进行指针移动操作），默认为该情况
@@ -95,15 +100,10 @@ public:
 
     // 给定数据在第几行，直接读取那一行的数据，返回指针
     // 适用于冷热数据归并时的旧热数据文件
-    inline void *read_line(order_of_row_in_file line_order);
-
-    // 从当前游标位置开始，一直读到文件末尾
-    // 适用于冷热数据归并时的旧冷数据文件
-    // 返回内存与行数
-    pair<void *, uint32_t> TableRowHandler::read_to_the_end();
+    inline void *read_row_buffer(row_order line_order);
 
     // 把数据写入下一行，默认写入一行
     // 适用于冷热数据归并时的新冷数据文件
-    inline void write_rows(void *buffer, order_of_row_in_file line_number = 1);
+    inline void write_rows(void *buffer, row_order line_number = 1);
 };
 #endif // MOUSEDB_SRC_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_

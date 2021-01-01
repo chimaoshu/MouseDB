@@ -1,4 +1,4 @@
-#include "table_row_handler.h"
+#include "src/table_row_handler/table_row_handler.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -29,10 +29,10 @@ TableRowHandler::TableRowHandler(const string &file_path,
 
     // g游标一开始会处于文件头部，方便按顺序读
     // p游标会始终处于文件尾部，方便追加
-    file_.move_g_cursor_to_the_beginning();
+    file_.move_g_cursor();
 }
 
-inline order_of_row_in_file TableRowHandler::get_number_of_rows_in_file()
+inline row_order TableRowHandler::get_number_of_rows_in_file()
 {
     uint64_t file_size = file_.get_file_size();
     assert(file_size % line_size_ == 0);
@@ -131,7 +131,7 @@ status_code TableRowHandler::deserialize_and_write(const T &rows_information)
 // pair第一个指针指向读取那行的内存
 // pair第二个指针指向由primary_key构成的vector的内存
 // 使用完毕需要释放内存
-inline pair<void *, rbtree_key *> TableRowHandler::read_next_row()
+inline pair<void *, rbtree_key *> TableRowHandler::read_next_row_buffer_and_index()
 {
     pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(0, line_size_, 1, true);
 
@@ -166,36 +166,42 @@ inline pair<void *, rbtree_key *> TableRowHandler::read_next_row()
 // 适用于宕机后从热数据文件中恢复数据，建立有序索引
 inline rbtree_key *TableRowHandler::read_row_index(int row_order = -1)
 {
-    pair<void *, uint32_t> buffer_info;
+    void *buffer;
 
     // 传入参数小于0，表明往下读一行
     if (row_order < 0)
     {
-        buffer_info = file_.read_lines_into_buffer(0, line_size_, true, false);
+        // buffer_info = file_.read_lines_into_buffer(0, line_size_, true, false);
+        // 弃用上述函数，现使用更加节省IO的函数：
+        buffer = file_.read_primary_key_into_buffer(
+            0,
+            primary_key_number_ * sizeof(primary_key_type),
+            true);
     }
-
     // 传入参数不小于0，表示读某一行
     else
     {
-        buffer_info = file_.read_lines_into_buffer(
+        // buffer_info = file_.read_lines_into_buffer(
+        //     (row_order - 1) * line_size_,
+        //     line_size_,
+        //     1);
+        // 弃用上述函数，现使用更加节省IO的函数：
+        buffer = file_.read_primary_key_into_buffer(
             (row_order - 1) * line_size_,
-            line_size_,
-            1);
+            primary_key_number_ * sizeof(primary_key_type),
+            false);
     }
 
     // 可用行数为0，表示读取到文件末尾了，结束了
-    if (buffer_info.second == 0)
+    if (buffer == NULL)
         return NULL;
-
-    // 内存的起始地址
-    void *buffer_pointer = buffer_info.first;
 
     // 容纳主键的容器
     rbtree_key *new_keys = new rbtree_key;
     new_keys->reserve(primary_key_number_);
 
     // key的读取地址
-    void *key_address = buffer_pointer;
+    void *key_address = buffer;
 
     // 读取前面几行primary key
     for (int i = 0; i < primary_key_number_; i++)
@@ -208,17 +214,17 @@ inline rbtree_key *TableRowHandler::read_row_index(int row_order = -1)
     }
 
     // 释放
-    delete[](char *) buffer_pointer;
+    delete[](char *) buffer;
 
     return new_keys;
 }
 
-inline pair<void *, uint32_t> TableRowHandler::read_to_the_end()
+inline pair<void *, uint32_t> TableRowHandler::read_buffer_and_index_to_the_end()
 {
     return file_.read_lines_into_buffer(0, line_size_, 0, true, true);
 }
 
-inline void TableRowHandler::write_rows(void *buffer, order_of_row_in_file line_number = 1)
+inline void TableRowHandler::write_rows(void *buffer, row_order line_number = 1)
 {
     // debug
     assert(buffer != NULL);
@@ -227,7 +233,7 @@ inline void TableRowHandler::write_rows(void *buffer, order_of_row_in_file line_
     file_.append(buffer, line_size_ * line_number);
 }
 
-inline void *TableRowHandler::read_line(order_of_row_in_file line_order)
+inline void *TableRowHandler::read_row_buffer(row_order line_order)
 {
     // 比如要读第1行，那就从0开始；要读第2行，那就从line_size位置开始。
     pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(
