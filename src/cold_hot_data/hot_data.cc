@@ -235,7 +235,7 @@ HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery = false)
     auto end_of_rbtree = tree_.end();
 
     // 旧冷数据中的一行，其first为内存，second为主键构成的vector，两者使用完都要释放
-    pair<void *, rbtree_key *> row_of_cold_data = old_cold_data_file.read_next_row();
+    pair<void *, rbtree_key *> row_of_cold_data = old_cold_data_file.read_next_row_buffer_and_index();
 
     // 用于指向热数据某行内存的指针，这里预分配内存
     void *pointer_to_the_row_of_hot_data_file = NULL;
@@ -257,14 +257,14 @@ HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery = false)
             delete row_of_cold_data.second;
 
             // 读取下一行冷数据
-            row_of_cold_data = old_cold_data_file.read_next_row();
+            row_of_cold_data = old_cold_data_file.read_next_row_buffer_and_index();
         }
         else
         {
             // 热数据比较小，写入热数据
 
             // 拿着红黑树上记录的，热数据在第几行，去热数据文件中读取并赋值
-            pointer_to_the_row_of_hot_data_file = current_used_hot_data_file_->read_line(it_of_rbtree->second);
+            pointer_to_the_row_of_hot_data_file = current_used_hot_data_file_->read_row_buffer(it_of_rbtree->second);
 
             // 写入新的冷数据
             new_cold_data_file.write_rows(pointer_to_the_row_of_hot_data_file);
@@ -284,7 +284,7 @@ HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery = false)
         while (it_of_rbtree != end_of_rbtree)
         {
             // 读取对应行的数据（一块内存）
-            pointer_to_the_row_of_hot_data_file = current_used_hot_data_file_->read_line(it_of_rbtree->second);
+            pointer_to_the_row_of_hot_data_file = current_used_hot_data_file_->read_row_buffer(it_of_rbtree->second);
 
             // 写入
             new_cold_data_file.write_rows(pointer_to_the_row_of_hot_data_file);
@@ -298,7 +298,7 @@ HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery = false)
     if (it_of_rbtree == end_of_rbtree)
     {
         // 直接简单粗暴冷数据读到文件末尾，不再使用read_next_row一行一行读了
-        auto the_rest_of_the_file = old_cold_data_file.read_to_the_end();
+        auto the_rest_of_the_file = old_cold_data_file.read_buffer_and_index_to_the_end();
 
         // 一整段加到新的冷数据文件中
         if (the_rest_of_the_file.second != 0)
@@ -323,4 +323,47 @@ void HotDataManager::change_to_switch_mode()
 inline bool HotDataManager::is_switch_mode()
 {
     return this->is_switching;
+}
+
+// 传入primary key和对应行在文件中的行数，构成一个节点添加到红黑树
+inline void HotDataManager::add_node(const rbtree_key &key, row_order row_order)
+{
+    tree_._M_insert_equal(rbtree_value(key, row_order));
+}
+
+// TODO 以后加个min<answer<max
+// 目前是min<=answer<=max
+list<row_order> *HotDataManager::find_values_by_primary_keys(const rbtree_key &key)
+{
+    list<row_order> *values = new list<row_order>;
+
+    auto res = tree_.equal_range(key);
+    for (auto it = res.first; it != res.second; it++)
+    {
+        values->push_back((*it).second);
+    }
+
+    return values;
+}
+
+list<row_order> *HotDataManager::find_values_between_primary_keys(
+    const rbtree_key &min, const rbtree_key &max)
+{
+    // debug
+    assert(max.size() == min.size() && compare_rule_for_primary_key()(min, max));
+
+    list<row_order> *values = new list<row_order>;
+
+    // 第一个大于等于min的值
+    auto begin_it = tree_.lower_bound(min);
+
+    // 第一个大于max的值
+    auto end_it = tree_.upper_bound(max);
+
+    for (; begin_it != end_it; begin_it++)
+    {
+        values->push_back((*begin_it).second);
+    }
+
+    return values;
 }

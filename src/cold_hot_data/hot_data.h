@@ -5,11 +5,13 @@
 #include "src/tools/tools.h"
 #include "src/tools/rbtree.h"
 
-using namespace std;
-
-class HotDataManager : protected rbtree
+class HotDataManager
 {
 private:
+
+    // 红黑树
+    rbtree tree_;
+
     // 用于进行二进制热数据文件的读写操作
     TableRowHandler *current_used_hot_data_file_ = NULL;
 
@@ -17,7 +19,7 @@ private:
     TableMetaHandler *&table_meta_handler_;
 
     // 记录热数据中有几行数据
-    order_of_row_in_file row_number_in_hot_data_file_;
+    row_order row_number_in_hot_data_file_;
 
     // 新的HotDataManager，用于存储hot-dump过程中到来的数据
     // 在dump完成后该实例将接替this成为新的HotDataManager
@@ -32,6 +34,21 @@ private:
     // 表的冷、热数据所在的文件目录
     const string &table_dir_;
 
+    // 传入primary key和对应行在文件中的行数，构成一个节点添加到红黑树
+    inline void add_node(const rbtree_key &key, row_order row_order);
+
+    // 传入两个key值，返回所有在两者中间的节点的值组成的链表，用完需要自行释放空间
+    // 这里不做索引优化，纯查找位于两个pk之间的值，需保证传入的参数符合primary key格式
+    std::list<row_order> *find_values_between_primary_keys(
+        const rbtree_key &min, const rbtree_key &max);
+
+    // 寻找primary key等于给定key值的所有值组成的链表，用完需要自行释放空间
+    // 适用于where id = 的情况
+    std::list<row_order> *find_values_by_primary_keys(const rbtree_key &key);
+
+    // TODO 删除操作
+
+
 public:
     // table_dir: 表格所在目录
     // table_meta_handler: 表对应的元数据处理类
@@ -42,7 +59,7 @@ public:
     // 2、如果打开TableMeta发现“正在使用热数据文件”不为null，说明上次意外地被关闭了，所以需要读取热数据文件恢复内存中的索引。
     // 3、如果打开TableMeta发现“正在使用热数据文件”不为null，并且“新数据”也不为空，说明上次是再hot-dump的过程中意外关闭，
     //    那么首先要把dump失败的数据dump完（这里使用主线程，不用子线程），然后再恢复“新数据文件”在内存中的索引，并把它转正。
-    HotDataManager(const string &table_dir, TableMetaHandler *&table_meta_handler, bool hot_dump = false);
+    HotDataManager(const std::string &table_dir, TableMetaHandler *&table_meta_handler, bool hot_dump = false);
 
     ~HotDataManager();
 
@@ -50,7 +67,8 @@ public:
     // 传入参数不为const是因为要在循环前对引用single_row预留空间
     status_code add_rows(const nlohmann::json &rows_info);
 
-    // TODO 查找，并进行索引优化
+    // TODO
+    std::list<row_order> *query();
 
     // 到时候看一下是否某些类内部使用的数据库的路径是否需要改，不然会出bug
     // hot-dump的过程：
