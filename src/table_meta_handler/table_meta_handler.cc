@@ -154,7 +154,7 @@ status_code TableMetaHandler::load()
         return err;
     }
 
-    respond<string> p = file.read_all();
+    respond<string> p = file.read_all_text();
 
     if (!p.first.empty())
     {

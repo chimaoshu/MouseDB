@@ -86,7 +86,7 @@ status_code DatabaseMetaHandler::load()
     if (err)
         return err;
 
-    respond<string> json_string = file.read_all();
+    respond<string> json_string = file.read_all_text();
     err = json_string.second;
 
     if (err)

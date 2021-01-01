@@ -11,7 +11,7 @@ public:
     {
         DataFileHandler a;
         a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
-        respond<string> b = a.read_all();
+        respond<string> b = a.read_all_text();
         cout << b.first;
     }
 
@@ -26,7 +26,7 @@ public:
     {
         DataFileHandler a;
         a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
-        respond<string> b = a.read_line();
+        respond<string> b = a.read_text_line();
         cout << b.first << endl;
     }
 
@@ -34,7 +34,7 @@ public:
     {
         DataFileHandler a;
         a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
-        respond<string> b = a.read_all();
+        respond<string> b = a.read_all_text();
         cout << b.first << endl;
     }
 
