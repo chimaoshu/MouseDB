@@ -1,5 +1,7 @@
 #include "src/cold_hot_data/cold_data.h"
 
+using namespace std;
+
 // 建立索引，赋值到index_
 // 即每128行为一块，每块用块头第一行表示
 status_code ColdDataManager::build_index()
@@ -21,7 +23,7 @@ status_code ColdDataManager::build_index()
 
     // 建索引
     rbtree_key *primary_key;
-    order_of_row_in_file order_to_read = 1;
+    row_order order_to_read = 1;
     for (int i = 0; i < index_.size(); i++)
     {
         index_[i].second = order_to_read;
@@ -64,4 +66,149 @@ ColdDataManager::ColdDataManager(const string &table_dir,
 ColdDataManager::~ColdDataManager()
 {
     delete cold_data_file_;
+}
+
+// TODO 以后加个min<answer<max，需要连同前面的start_row、end_row一起改
+// 目前是min <= answer <= max
+// 返回符合条件的行在冷数据文件中的行数
+list<row_order> *ColdDataManager::find_values_between_primary_keys(const rbtree_key &min, const rbtree_key &max)
+{
+    row_order start_scanning_row = -1, end_scanning_row = -1;
+
+    // 其实二分查找的过程应该可以用lower_bound和upper_bound来做的
+    // 由于允许主键相同的数据出现，因此必须从主键小于min的第一个索引行开始扫描
+    // 先判断特殊情况，是否直接从第一行开始扫描
+    if (min <= index_[0].first)
+    {
+        start_scanning_row = 1;
+    }
+    // 是否从最后一个索引行开始扫描
+    else if (min > index_.back().first)
+    {
+        start_scanning_row = index_.back().second;
+    }
+    // 二分查找，找到小于min的第一个索引行
+    else
+    {
+        int low = 0, high = index_.size() - 1, mid;
+
+        // 找到主键小于min的第一个索引行
+        while (low <= high)
+        {
+            mid = (low + high) / 2;
+
+            // 小于min
+            if (index_[mid].first < min)
+            {
+                // mid < min <= mid + 1，从mid位置的索引开始扫描
+                if (index_[mid + 1].first >= min)
+                {
+                    start_scanning_row = index_[mid - 1].second;
+                    break;
+                }
+                else
+                {
+                    // 往主键更大的地方寻找
+                    low = mid + 1;
+                }
+            }
+            // 大于min
+            else
+            {
+                // 往主键更小的地方寻找
+                high = mid - 1;
+            }
+        }
+
+        assert(start_scanning_row >= 0);
+    }
+
+    // 由于允许主键相同的数据出现，因此必须在主键大于max的第一个索引行停止扫描
+    // 先判断特殊情况，是否直接从第一行停止扫描
+    if (max < index_[0].first)
+    {
+        end_scanning_row = 1;
+    }
+    // 是否扫描到表末尾最后一行
+    else if (max >= index_.back().first)
+    {
+        end_scanning_row = this->row_number_of_cold_data_file_;
+    }
+    // 二分查找，找到大于max的第一个索引行
+    else
+    {
+        int low = 0, high = index_.size() - 1, mid;
+
+        // 找到主键大于max的第一个索引行
+        while (low <= high)
+        {
+            mid = (low + high) / 2;
+
+            // 大于max
+            if (index_[mid].first > max)
+            {
+                // mid-1 < max < mid，从mid位置的索引停止扫描
+                if (index_[mid - 1].first <= max)
+                {
+                    end_scanning_row = index_[mid - 1].second;
+                    break;
+                }
+                else
+                {
+                    // 往主键更小的地方寻找
+                    high = mid - 1;
+                }
+            }
+            // 小于max
+            else
+            {
+                // 往主键更大的地方寻找
+                low = mid + 1;
+            }
+        }
+
+        assert(end_scanning_row >= 0);
+    }
+
+    // 读取对应位置的行的主键，检查是否符合条件
+    rbtree_key *primary_key_of_current_row = NULL;
+
+    // 返回符合条件的行在文件中的行数
+    list<row_order> *output = new list<row_order>;
+
+    // 表示：找到第一个符合条件的min行，开始进行添加
+    bool start_append_min = false;
+
+    for (row_order current_row = start_scanning_row; current_row <= end_scanning_row; current_row++)
+    {
+        primary_key_of_current_row = cold_data_file_->read_row_index(current_row);
+
+        if (!start_append_min)
+        {
+            // 找到第一个符合条件的min行，开始进行添加
+            if (*primary_key_of_current_row == min)
+            {
+                start_append_min = true;
+                output->push_back(current_row);
+            }
+            else
+            {
+                continue;
+            }
+        }
+        else
+        {
+            if (*primary_key_of_current_row <= max)
+            {
+                output->push_back(current_row);
+            }
+            else
+            {
+                // 扫描到第一个大于max的则停止
+                break;
+            }
+        }
+    }
+
+    return output;
 }
