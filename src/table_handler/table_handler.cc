@@ -152,9 +152,38 @@ inline HotDataManager *&TablesHandler::get_hot_data_manager(const std::string &t
     }
 }
 
+inline ColdDataManager *&TablesHandler::get_cold_data_manager(const std::string &table_name)
+{
+    auto it = map_of_table_name_to_cold_data_manager_.find(table_name);
+
+    // 若存在则返回
+    if (it != map_of_table_name_to_cold_data_manager_.end())
+    {
+        return it->second;
+    }
+    // 不存在则创建
+    else
+    {
+        string cold_data_file_path = this->get_table_dir(table_name) + '/' + table_name + ".hot";
+
+        // 打开table_row_handler
+        // 传入TableMeta让其自己从中取出正在使用的数据文件
+        map_of_table_name_to_cold_data_manager_[table_name] = new ColdDataManager(
+            cold_data_file_path,
+            this->get_table_meta_handler(table_name));
+
+        return map_of_table_name_to_cold_data_manager_[table_name];
+    }
+}
+
 inline void TablesHandler::set_hot_data_manager_in_map(const string &table_name, HotDataManager *new_hot_data_manager)
 {
     map_of_table_name_to_hot_data_manager_[table_name] = new_hot_data_manager;
+}
+
+inline void TablesHandler::set_cold_data_manager_in_map(const string &table_name, ColdDataManager *new_cold_data_manager)
+{
+    map_of_table_name_to_cold_data_manager_[table_name] = new_cold_data_manager;
 }
 
 status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
@@ -165,10 +194,8 @@ status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
     HotDataManager *old_hot_data_manager = get_hot_data_manager(table_name);
 
     // 进行hot-dump操作，生成新的热数据文件、冷数据文件，返回新的HotDataManager
+    // 此时TableMata中已经存储了新的冷数据文件的文件名了
     HotDataManager *new_hot_data_manager = old_hot_data_manager->dump_to_cold_data();
-
-    // 生成新的ColdDataManager
-    // TODO
 
     // 获取现在table对应的TableMetaHandler
     TableMetaHandler *current_table_meta_handler = get_table_meta_handler(table_name);
@@ -185,8 +212,18 @@ status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
     current_table_meta_handler->change_new_cold_data_file_to_current_used();
     current_table_meta_handler->save();
 
-    // 3、修改表名对应的ColdDataManger为缓存的ColdDataManager，并删除旧的manager
-    // TODO
+    // 3、生成新的ColdDataManager
+    // 修改表名对应的ColdDataManger为缓存的ColdDataManager，并删除旧的manager
+
+    // 冷数据文件名从传入的TableMeta中取出（即新的冷数据文件）
+    ColdDataManager *new_cold_data_manager = new ColdDataManager(
+        this->get_table_dir(table_name),
+        current_table_meta_handler
+    );
+
+    delete this->get_cold_data_manager(table_name);
+    this->set_cold_data_manager_in_map(table_name, new_cold_data_manager);
+    
 
     // 4、修改表名对应的HotDataManger为缓存的HotDataManager，并删除旧的manager
     // 此时查询操作来的时候，检查到新HotDataManager的is_switching为false
@@ -199,5 +236,8 @@ status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
 
 status_code TablesHandler::dump_table(const string &table_name)
 {
+    thread hot_dump_thread(dump_table_in_sub_thread, table_name);
 
+    // 与主线程分离进行
+    hot_dump_thread.detach();
 }
