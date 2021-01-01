@@ -87,8 +87,8 @@ public:
     // read：可读
     status_code open(const std::string &file_path, bool write = 1, bool append = 0, bool truncate = 0, bool read = 0);
 
-    // 移动游标到文件头，适合接下来进行顺序读
-    void move_g_cursor_to_the_beginning();
+    // 移动游标到文件头，默认移动到文件头，适合接下来进行顺序读
+    void move_g_cursor(int position=0);
 
     bool is_open();
 
@@ -113,12 +113,20 @@ public:
         bool begin_at_the_current_cursor=false,
         bool read_to_the_end=false);
 
+    // 读取某一行的primary_key到内存中，不进行序列化，只读内存块
+    // 如果只要读取主键信息，比起使用read_lines_into_buffer（读取整行信息）
+    // 此处只读主键信息，更加节省磁盘IO，但是这里每次只读一行。
+    void* read_primary_key_into_buffer(
+        uint64_t start_position,
+        const int &primary_keys_size,
+        bool begin_at_the_current_cursor=false);
+
     // 读取一行字符串，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
-    respond<std::string> read_line();
+    respond<std::string> read_text_line();
 
     // 读取整个文件内容，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
-    respond<std::string> read_all();
+    respond<std::string> read_all_text();
 };
 #endif // MOUSEDB_SRC_DATA_FILE_HANDLER_H_
