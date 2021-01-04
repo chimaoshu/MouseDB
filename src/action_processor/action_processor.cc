@@ -1,5 +1,8 @@
 #include "action_processor.h"
 
+using namespace std;
+using json = nlohmann::json;
+
 UserAction::UserAction()
     : current_dir_name_(get_current_dir_name()),
       db_meta_dir_(current_dir_name_ + "/data"),
@@ -144,52 +147,52 @@ void UserAction::drop_a_table(const string &table_name)
         cout << "table drop error:" << err << '\n';
 }
 
-// 后续append和get_lines都封装到TableHandler里面去，这样TableHandler也不用对外提供TableMetaHandler了
-void UserAction::append(const string &table_name, json &rows_info)
-{
-    string database_path = current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb";
+// // 后续append和get_lines都封装到TableHandler里面去，这样TableHandler也不用对外提供TableMetaHandler了
+// void UserAction::insert(const string &table_name, json &rows_info)
+// {
+//     string database_path = current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb";
 
-    // 打开table_row_handler
-    TableRowHandler table_row_handler(
-        database_path,
-        current_used_database_->get_table_meta_handler(table_name));
+//     // 打开table_row_handler
+//     TableRowHandler table_row_handler(
+//         database_path,
+//         current_used_database_->get_table_meta_handler(table_name));
 
-    // 写入数据
-    table_row_handler.write(rows_info);
-}
+//     // 写入数据
+//     table_row_handler.serialize_and_write(rows_info);
+// }
 
-void UserAction::get_lines(
-    uint32_t off_set,
-    uint32_t line_number,
-    const string &table_name,
-    list<string> &wanted_column_names,
-    bool debug_mode)
-{
-    // 实例化 TableRowHandler
-    TableRowHandler table_row_handler(
-        current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb",
-        current_used_database_->get_table_meta_handler(table_name));
+// void UserAction::get_lines(
+//     uint32_t off_set,
+//     uint32_t line_number,
+//     const string &table_name,
+//     list<string> &wanted_column_names,
+//     bool debug_mode)
+// {
+//     // 实例化 TableRowHandler
+//     TableRowHandler table_row_handler(
+//         current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb",
+//         current_used_database_->get_table_meta_handler(table_name));
 
-    // 生成要求的列的编号
-    list<int> wanted_column_orders = current_used_database_
-                                         ->get_table_meta_handler(table_name)
-                                         ->get_column_orders_by_names(wanted_column_names);
+//     // 生成要求的列的编号
+//     list<int> wanted_column_orders = current_used_database_
+//                                          ->get_table_meta_handler(table_name)
+//                                          ->get_column_orders_by_names(wanted_column_names);
 
-    // debug
-    if (debug_mode)
-    {
-        // 把数据读取后序列化为JSON
-        json *outcome = table_row_handler.read<json>(off_set, line_number, wanted_column_orders);
-        cout << *outcome << endl;
+//     // debug
+//     if (debug_mode)
+//     {
+//         // 把数据读取后序列化为JSON
+//         nlohmann::json *outcome = table_row_handler.read_and_deserialize<nlohmann::json>(off_set, line_number, wanted_column_orders);
+//         cout << *outcome << endl;
 
-        delete outcome;
-        return;
-    }
+//         delete outcome;
+//         return;
+//     }
 
-    // 把数据读取后序列化为list
-    list<json> *outcome = table_row_handler.read<list<json>>(off_set, line_number, wanted_column_orders);
-    cout << *outcome << endl;
+//     // 把数据读取后序列化为list
+//     list<nlohmann::json> *outcome = table_row_handler.read_and_deserialize<list<nlohmann::json>>(off_set, line_number, wanted_column_orders);
+//     cout << *outcome << endl;
 
-    // 后续其他操作
-    delete outcome;
-}
+//     // 后续其他操作
+//     delete outcome;
+// }

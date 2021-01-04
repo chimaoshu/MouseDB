@@ -12,11 +12,11 @@ private:
     TableRowHandler *cold_data_file_;
 
     // 表路径，即冷数据文件所在路径
-    const string &table_dir_;
+    const std::string &table_dir_;
 
     // 索引，分块的索引，可以用二分法查找
     // first是主键，second是在文件中行数
-    vector<rbtree_value> index_;
+    std::vector<rbtree_value> index_;
 
     // 文件的数据行数
     int row_number_of_cold_data_file_;
@@ -39,9 +39,9 @@ public:
     // cold_data_file_name: 默认为空字符串，表示不使用传入的冷数据文件名
     // 将从TableMeta中获取冷数据文件名，创建冷数据文件
     // 若其不为空，表示使用传入的文件名创建冷数据文件
-    ColdDataManager(const string &table_dir,
+    ColdDataManager(const std::string &table_dir,
                     TableMetaHandler *&table_meta_handler,
-                    const string cold_data_file_name = "",
+                    const std::string cold_data_file_name = "",
                     uint8_t index_interval_rows_number = 128);
 
     ~ColdDataManager();

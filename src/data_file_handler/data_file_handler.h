@@ -45,7 +45,7 @@ private:
     const int page_size_ = 4096;
 
     // 从页码到对应内存块的映射
-    std::map<uint32_t, void*> pages_cache_;
+    std::map<uint32_t, void *> pages_cache_;
 
     // 队列，按照LRU算法，记录缓存页的页码
     std::list<uint32_t> LRU_cache_list;
@@ -65,7 +65,7 @@ private:
 
 public:
     // 缓存的页数，默认为0，不缓存为0
-    DataFileHandler(uint16_t number_of_page_to_cache=0); 
+    DataFileHandler(uint16_t number_of_page_to_cache = 0);
     ~DataFileHandler();
 
     // 路径下的文件是否存在
@@ -75,7 +75,7 @@ public:
     std::string get_path();
 
     // 获取文件大小s
-    inline uint64_t get_file_size();
+    uint64_t get_file_size();
 
     // 给成员变量file_赋值
     // 若不可读，那么在文件不存在时，就会创建文件
@@ -88,7 +88,7 @@ public:
     status_code open(const std::string &file_path, bool write = 1, bool append = 0, bool truncate = 0, bool read = 0);
 
     // 移动游标到文件头，默认移动到文件头，适合接下来进行顺序读
-    void move_g_cursor(int position=0);
+    void move_g_cursor(int position = 0);
 
     bool is_open();
 
@@ -110,16 +110,16 @@ public:
         uint64_t start_position,
         const int &line_size,
         const int &number_of_line,
-        bool begin_at_the_current_cursor=false,
-        bool read_to_the_end=false);
+        bool begin_at_the_current_cursor = false,
+        bool read_to_the_end = false);
 
     // 读取某一行的primary_key到内存中，不进行序列化，只读内存块
     // 如果只要读取主键信息，比起使用read_lines_into_buffer（读取整行信息）
     // 此处只读主键信息，更加节省磁盘IO，但是这里每次只读一行。
-    void* read_primary_key_into_buffer(
+    void *read_primary_key_into_buffer(
         uint64_t start_position,
         const int &primary_keys_size,
-        bool begin_at_the_current_cursor=false);
+        bool begin_at_the_current_cursor = false);
 
     // 读取一行字符串，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空

@@ -18,16 +18,6 @@ const json &TableMetaHandler::get_table_meta()
     return table_meta_;
 }
 
-inline int TableMetaHandler::get_key_number()
-{
-    return table_meta_["primary_key"].size() + table_meta_["other_keys"].size();
-}
-
-inline int TableMetaHandler::get_primary_key_number()
-{
-    return table_meta_["primary_key"].size();
-}
-
 const string TableMetaHandler::get_current_used_hot_data_file_name()
 {
     auto it = table_meta_["hot_data"].find("current_used");

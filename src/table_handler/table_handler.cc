@@ -52,7 +52,7 @@ string TablesHandler::get_table_dir(const string &table_name)
         return "";
 }
 
-status_code TablesHandler::create(const string &table_directory, const string &table_name, json &table_meta, DatabaseMetaHandler &db_mete_handler)
+status_code TablesHandler::create_table(const string &table_directory, const string &table_name, json &table_meta, DatabaseMetaHandler &db_mete_handler)
 {
     // 创建表文件
     string table_path = table_directory + '/' + table_name + ".mdb";
@@ -123,13 +123,7 @@ const json &TablesHandler::get_table_meta(const string &table_name)
         return NULL;
 }
 
-inline TableMetaHandler *&TablesHandler::get_table_meta_handler(const string &table_name)
-{
-    // 返回表名对应的指向TableMetaHandler实例的指针的引用
-    return map_of_table_name_to_table_meta_handler_[table_name];
-}
-
-inline HotDataManager *&TablesHandler::get_hot_data_manager(const std::string &table_name)
+ HotDataManager *&TablesHandler::get_hot_data_manager(const std::string &table_name)
 {
     auto it = map_of_table_name_to_hot_data_manager_.find(table_name);
 
@@ -152,7 +146,7 @@ inline HotDataManager *&TablesHandler::get_hot_data_manager(const std::string &t
     }
 }
 
-inline ColdDataManager *&TablesHandler::get_cold_data_manager(const std::string &table_name)
+ ColdDataManager *&TablesHandler::get_cold_data_manager(const std::string &table_name)
 {
     auto it = map_of_table_name_to_cold_data_manager_.find(table_name);
 
@@ -176,12 +170,12 @@ inline ColdDataManager *&TablesHandler::get_cold_data_manager(const std::string 
     }
 }
 
-inline void TablesHandler::set_hot_data_manager_in_map(const string &table_name, HotDataManager *new_hot_data_manager)
+ void TablesHandler::set_hot_data_manager_in_map(const string &table_name, HotDataManager *new_hot_data_manager)
 {
     map_of_table_name_to_hot_data_manager_[table_name] = new_hot_data_manager;
 }
 
-inline void TablesHandler::set_cold_data_manager_in_map(const string &table_name, ColdDataManager *new_cold_data_manager)
+ void TablesHandler::set_cold_data_manager_in_map(const string &table_name, ColdDataManager *new_cold_data_manager)
 {
     map_of_table_name_to_cold_data_manager_[table_name] = new_cold_data_manager;
 }
@@ -236,7 +230,7 @@ status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
 
 status_code TablesHandler::dump_table(const string &table_name)
 {
-    thread hot_dump_thread(dump_table_in_sub_thread, table_name);
+    thread hot_dump_thread(&TablesHandler::dump_table_in_sub_thread, this, table_name);
 
     // 与主线程分离进行
     hot_dump_thread.detach();

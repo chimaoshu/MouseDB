@@ -5,7 +5,7 @@ using json = nlohmann::json;
 
 // 最后一个参数：是否为hot_dump创建的，如果是hot-dump创建的，则不考虑对TableMeta进行检查
 // 如果不是hot-dump创建的，说明是数据库第一次打开，那么需要见查看TableMeta看热数据是否已经全部转化为冷数据
-HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table_meta_handler, bool hot_dump = false)
+HotDataManager::HotDataManager(const string &table_dir, TableMetaHandler *&table_meta_handler, bool hot_dump)
     : table_meta_handler_(table_meta_handler),
       table_dir_(table_dir)
 {
@@ -127,10 +127,10 @@ HotDataManager::~HotDataManager()
 
 // 后续应该支持使用protobuf而不是json这种及其浪费资源的东西
 // 传入参数不为const是因为要在循环前对引用single_row预留空间
-status_code HotDataManager::add_rows(const json &rows_info)
+status_code HotDataManager::insert_rows(const json &rows_info)
 {
     // 先写入文件
-    status_code err = current_used_hot_data_file_->deserialize_and_write(rows_info);
+    status_code err = current_used_hot_data_file_->serialize_and_write(rows_info);
 
     // 再存到红黑树
     if (!err)
@@ -186,7 +186,7 @@ status_code HotDataManager::add_rows(const json &rows_info)
 // 该函数：
 // 把冷热数据文件dump成一份新的冷数据，并返回新的HotDataManager
 // 参数：is_recovery若置为true，则说明是恢复数据的情况（上述第3点），则不开一个新的热数据manager
-HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery = false)
+HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery)
 {
     // 运行在子线程中
 
@@ -316,19 +316,6 @@ HotDataManager *HotDataManager::dump_to_cold_data(bool is_recovery = false)
 void HotDataManager::change_to_switch_mode()
 {
     this->is_switching = true;
-}
-
-// TablesHandler在接收到查询请求时会调用该函数进行检查
-// 若已经在切换模式，则将查询请求缓存到消息队列中，等待切换完成后使用新的一套冷热数据进行查询
-inline bool HotDataManager::is_switch_mode()
-{
-    return this->is_switching;
-}
-
-// 传入primary key和对应行在文件中的行数，构成一个节点添加到红黑树
-inline void HotDataManager::add_node(const rbtree_key &key, row_order row_order)
-{
-    tree_._M_insert_equal(rbtree_value(key, row_order));
 }
 
 // TODO 以后加个min<answer<max

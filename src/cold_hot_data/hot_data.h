@@ -1,3 +1,5 @@
+#ifndef MOUSEDB_SRC_COLD_HOT_DATA_H_
+#define MOUSEDB_SRC_COLD_HOT_DATA_H_
 
 #include <string>
 
@@ -8,7 +10,6 @@
 class HotDataManager
 {
 private:
-
     // 红黑树
     rbtree tree_;
 
@@ -32,10 +33,11 @@ private:
     bool is_switching = false;
 
     // 表的冷、热数据所在的文件目录
-    const string &table_dir_;
+    const std::string &table_dir_;
 
     // 传入primary key和对应行在文件中的行数，构成一个节点添加到红黑树
-    inline void add_node(const rbtree_key &key, row_order row_order);
+    inline void add_node(const rbtree_key &key, row_order row_order)
+    { tree_._M_emplace_equal(key, row_order); }
 
     // 传入两个key值，返回所有在两者中间的节点的值组成的链表，用完需要自行释放空间
     // 这里不做索引优化，纯查找位于两个pk之间的值，需保证传入的参数符合primary key格式
@@ -47,7 +49,6 @@ private:
     std::list<row_order> *find_values_by_primary_keys(const rbtree_key &key);
 
     // TODO 删除操作
-
 
 public:
     // table_dir: 表格所在目录
@@ -62,10 +63,6 @@ public:
     HotDataManager(const std::string &table_dir, TableMetaHandler *&table_meta_handler, bool hot_dump = false);
 
     ~HotDataManager();
-
-    // 后续应该支持使用protobuf而不是json这种及其浪费资源的东西
-    // 传入参数不为const是因为要在循环前对引用single_row预留空间
-    status_code add_rows(const nlohmann::json &rows_info);
 
     // TODO
     std::list<row_order> *query();
@@ -96,7 +93,22 @@ public:
     // 转变为switch模式意味着该实例不再接受查询操作
     void change_to_switch_mode();
 
+    // 后续应该支持使用protobuf而不是json这种及其浪费资源的东西
+    // 传入参数不为const是因为要在循环前对引用single_row预留空间
+    status_code insert_rows(const nlohmann::json &rows_info);
+
+    // 删除数据
+    status_code delete_rows();
+
+    // 修改数据
+    status_code update_rows();
+
     // TablesHandler在接收到查询请求时会调用该函数进行检查
     // 若已经在切换模式，则将查询请求缓存到消息队列中，等待切换完成后使用新的一套冷热数据进行查询
-    inline bool is_switch_mode();
+    inline bool is_switch_mode()
+    {
+        return this->is_switching;
+    }
 };
+
+#endif // MOUSEDB_SRC_COLD_HOT_DATA_H_

@@ -45,8 +45,8 @@ status_code ColdDataManager::build_index()
 // 若其不为空，表示使用传入的文件名创建冷数据文件
 ColdDataManager::ColdDataManager(const string &table_dir,
                                  TableMetaHandler *&table_meta_handler,
-                                 const string cold_data_file_name = "",
-                                 uint8_t index_interval_rows_number = 128)
+                                 const string cold_data_file_name,
+                                 uint8_t index_interval_rows_number)
     : table_dir_(table_dir_),
       index_interval_rows_number_(index_interval_rows_number)
 {

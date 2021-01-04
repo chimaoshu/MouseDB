@@ -82,10 +82,12 @@ public:
     std::vector<int8_t> &get_type_of_each_column();
 
     // 获取主键数量
-    inline int get_primary_key_number();
+    inline int get_primary_key_number()
+    {return table_meta_["primary_key"].size();}
 
     // 获取键数量
-    inline int get_key_number();
+    inline int get_key_number()
+    {return table_meta_["primary_key"].size() + table_meta_["other_keys"].size();}
 
     const std::string get_table_name();
 

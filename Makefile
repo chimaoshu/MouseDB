@@ -16,6 +16,8 @@ DMH = database_meta_handler
 DH = database_handler
 AP = action_processor
 TRH = table_row_handler
+HD = hot_data
+CD = cold_data
 
 # clean
 
@@ -64,7 +66,7 @@ $(EXERC_FILE_DIR)/$(TMH).o: $(HANDLER_SOURCE_DIR)/$(TMH)/$(TMH).cc
 
 
 # TH单元测试，依赖于所有Handler
-$(TH)_unit_test: $(EXERC_FILE_DIR)/$(TH)_unit_test.o $(EXERC_FILE_DIR)/$(TRH).o $(EXERC_FILE_DIR)/$(AP).o $(EXERC_FILE_DIR)/$(DH).o $(EXERC_FILE_DIR)/$(DMH).o $(EXERC_FILE_DIR)/$(TH).o $(EXERC_FILE_DIR)/$(TMH).o $(EXERC_FILE_DIR)/$(DFH).o
+$(TH)_unit_test: $(EXERC_FILE_DIR)/$(TH)_unit_test.o $(EXERC_FILE_DIR)/$(AP).o $(EXERC_FILE_DIR)/$(DH).o  $(EXERC_FILE_DIR)/$(TH).o $(EXERC_FILE_DIR)/$(HD).o $(EXERC_FILE_DIR)/$(CD).o $(EXERC_FILE_DIR)/$(TRH).o $(EXERC_FILE_DIR)/$(TMH).o $(EXERC_FILE_DIR)/$(DMH).o $(EXERC_FILE_DIR)/$(DFH).o 
 	$(CC) $(LFLAGS) $^ -$(DBG_TYPE) -o $(EXERC_FILE_DIR)/$@
 
 $(EXERC_FILE_DIR)/$(TH)_unit_test.o: $(HANDLER_TEST_DIR)/$(TH)/$(TH)_unit_test.cc
@@ -84,34 +86,37 @@ $(EXERC_FILE_DIR)/$(DMH)_unit_test.o: $(HANDLER_TEST_DIR)/$(DMH)/$(DMH)_unit_tes
 $(EXERC_FILE_DIR)/$(DMH).o: $(HANDLER_SOURCE_DIR)/$(DMH)/$(DMH).cc
 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
-# database_handler单元测试
-# TODO
-
-$(EXERC_FILE_DIR)/$(DH)_unit_test.o: $(HANDLER_TEST_DIR)/$(DH)/$(DH)_unit_test.cc
-	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
+# database_handler单元测试，不能用CFLAG
+# $(EXERC_FILE_DIR)/$(DH)_unit_test.o: $(HANDLER_TEST_DIR)/$(DH)/$(DH)_unit_test.cc
+# 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
 $(EXERC_FILE_DIR)/$(DH).o: $(HANDLER_SOURCE_DIR)/$(DH)/$(DH).cc
 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
 
 # table_row
-
-$(EXERC_FILE_DIR)/$(TRH)_unit_test.o: $(HANDLER_TEST_DIR)/$(TRH)/$(TRH)_unit_test.cc
-	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
+# $(EXERC_FILE_DIR)/$(TRH)_unit_test.o: $(HANDLER_TEST_DIR)/$(TRH)/$(TRH)_unit_test.cc
+# 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
 $(EXERC_FILE_DIR)/$(TRH).o: $(HANDLER_SOURCE_DIR)/$(TRH)/$(TRH).cc
 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
 # action_processor单元测试
-# TODO
-
-$(EXERC_FILE_DIR)/$(AP)_unit_test.o: $(HANDLER_TEST_DIR)/$(AP)/$(AP)_unit_test.cc
-	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
+# $(EXERC_FILE_DIR)/$(AP)_unit_test.o: $(HANDLER_TEST_DIR)/$(AP)/$(AP)_unit_test.cc
+# 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
 $(EXERC_FILE_DIR)/$(AP).o: $(HANDLER_SOURCE_DIR)/$(AP)/$(AP).cc
 	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
 
-# test_all
+# 热数据
+$(EXERC_FILE_DIR)/$(HD).o: $(HANDLER_SOURCE_DIR)/cold_hot_data/$(HD).cc
+	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
+
+# 冷数据
+$(EXERC_FILE_DIR)/$(CD).o: $(HANDLER_SOURCE_DIR)/cold_hot_data/$(CD).cc
+	$(CC) $(CFLAGS) $^ -$(DBG_TYPE) -o $@ -I ./ -std=c++11
+
+# 总测试
 handler_test: $(EXERC_FILE_DIR)/handler_test.o $(EXERC_FILE_DIR)/$(TRH).o $(EXERC_FILE_DIR)/$(AP).o $(EXERC_FILE_DIR)/$(DH).o $(EXERC_FILE_DIR)/$(DMH).o $(EXERC_FILE_DIR)/$(TH).o $(EXERC_FILE_DIR)/$(TMH).o $(EXERC_FILE_DIR)/$(DFH).o
 	$(CC) $(LFLAGS) $^ -$(DBG_TYPE) -o $(EXERC_FILE_DIR)/$@ -std=c++11
 

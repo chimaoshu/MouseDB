@@ -17,17 +17,14 @@
 #include "src/database_meta_handler/database_meta_handler.h"
 
 
-using namespace std;
-using json = nlohmann::json;
-
 class UserAction
 {
 private:
     // 工作目录
-    string current_dir_name_;
+    std::string current_dir_name_;
 
     // 数据所在目录
-    string db_meta_dir_;
+    std::string db_meta_dir_;
 
     // 当前打开的数据库
     TablesHandler *current_used_database_ = NULL;
@@ -40,14 +37,14 @@ private:
 
     // 存储从数据库名到数据库的映射（一个数据库就是一个table_handler）
     // 每当有数据库被打开，那么这里就会多存储一个数据库的信息
-    map<string, TablesHandler *> map_of_table_name_to_table_handler_;
+    std::map<std::string, TablesHandler *> map_of_table_name_to_table_handler_;
 
 public:
     // 当用户打开了程序，即读取数据库信息
     UserAction();
 
     // 传入工作目录
-    UserAction(string work_folder);
+    UserAction(std::string work_folder);
 
     // 显示调试信息
     void print_debug_info();
@@ -56,33 +53,33 @@ public:
     void show_database_names();
 
     // 创建一个数据库
-    void create_a_database(const string &database_name);
+    void create_a_database(const std::string &database_name);
 
     // 删除一个数据库
-    void drop_a_database(const string &database_name);
+    void drop_a_database(const std::string &database_name);
 
     // 打开一个数据库
-    void use_a_database(const string &database_name);
+    void use_a_database(const std::string &database_name);
 
     // 显示所有表
     void show_table_names();
 
     // 创建一个表
-    void create_a_table(const string &table_name, json &table_meta);
+    void create_a_table(const std::string &table_name, nlohmann::json &table_meta);
 
     // 删除一个表
-    void drop_a_table(const string &table_name);
+    void drop_a_table(const std::string &table_name);
 
     // 追加几行（目前缺少对rows_info的正确性检验）
     // 后续应该支持protobuf而非JSON数据的传入
-    void append(const string &table_name, json &rows_info);
+    void insert(const std::string &table_name, nlohmann::json &rows_info);
 
     // 查询几行，如果是调试模式返回json，否则返回list
     void get_lines(
         uint32_t off_set,
         uint32_t line_number,
-        const string &table_name,
-        list<string> &wanted_column_names,
+        const std::string &table_name,
+        std::list<std::string> &wanted_column_names,
         bool debug_mode);
 };
 #endif

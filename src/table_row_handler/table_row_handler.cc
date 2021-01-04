@@ -29,10 +29,10 @@ TableRowHandler::TableRowHandler(const string &file_path,
 
     // g游标一开始会处于文件头部，方便按顺序读
     // p游标会始终处于文件尾部，方便追加
-    file_.move_g_cursor();
+    file_.move_g_cursor(0);
 }
 
-inline row_order TableRowHandler::get_number_of_rows_in_file()
+row_order TableRowHandler::get_number_of_rows_in_file()
 {
     uint64_t file_size = file_.get_file_size();
     assert(file_size % line_size_ == 0);
@@ -40,11 +40,11 @@ inline row_order TableRowHandler::get_number_of_rows_in_file()
 }
 
 template <class T>
-T *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns)
+T *TableRowHandler::read_and_deserialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns)
 {
     pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(off_set * line_size_,
                                                                       line_size_,
-                                                                      line_number);
+                                                                      line_number, false, false);
 
     T *rows = new T;
 
@@ -80,7 +80,7 @@ T *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number,
 }
 
 template <class T>
-status_code TableRowHandler::deserialize_and_write(const T &rows_information)
+status_code TableRowHandler::serialize_and_write(const T &rows_information)
 {
     // 行数目
     int rows_number = rows_information.size();
@@ -131,9 +131,9 @@ status_code TableRowHandler::deserialize_and_write(const T &rows_information)
 // pair第一个指针指向读取那行的内存
 // pair第二个指针指向由primary_key构成的vector的内存
 // 使用完毕需要释放内存
-inline pair<void *, rbtree_key *> TableRowHandler::read_next_row_buffer_and_index()
+pair<void *, rbtree_key *> TableRowHandler::read_next_row_buffer_and_index()
 {
-    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(0, line_size_, 1, true);
+    pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(0, line_size_, 1, true, false);
 
     // 可用行数为0，表示读取到文件末尾了，结束了
     if (buffer_info.second == 0)
@@ -164,7 +164,7 @@ inline pair<void *, rbtree_key *> TableRowHandler::read_next_row_buffer_and_inde
 
 // 读取下一行，返回红黑树的节点pair<rbtree_key, uint32>
 // 适用于宕机后从热数据文件中恢复数据，建立有序索引
-inline rbtree_key *TableRowHandler::read_row_index(int row_order = -1)
+rbtree_key *TableRowHandler::read_row_index(int row_order)
 {
     void *buffer;
 
@@ -219,12 +219,7 @@ inline rbtree_key *TableRowHandler::read_row_index(int row_order = -1)
     return new_keys;
 }
 
-inline pair<void *, uint32_t> TableRowHandler::read_buffer_and_index_to_the_end()
-{
-    return file_.read_lines_into_buffer(0, line_size_, 0, true, true);
-}
-
-inline void TableRowHandler::write_rows(void *buffer, row_order line_number = 1)
+void TableRowHandler::write_rows(void *buffer, row_order line_number)
 {
     // debug
     assert(buffer != NULL);
@@ -233,13 +228,15 @@ inline void TableRowHandler::write_rows(void *buffer, row_order line_number = 1)
     file_.append(buffer, line_size_ * line_number);
 }
 
-inline void *TableRowHandler::read_row_buffer(row_order line_order)
+void *TableRowHandler::read_row_buffer(row_order line_order)
 {
     // 比如要读第1行，那就从0开始；要读第2行，那就从line_size位置开始。
     pair<void *, uint32_t> buffer_info = file_.read_lines_into_buffer(
         (line_order - 1) * line_size_,
         line_size_,
-        1);
+        1,
+        false,
+        false);
 
     // 没有这一行
     if (buffer_info.second == 0)
@@ -249,8 +246,8 @@ inline void *TableRowHandler::read_row_buffer(row_order line_order)
 }
 
 // 特化
-template json *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
-template list<json> *TableRowHandler::read_and_serialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
+template json *TableRowHandler::read_and_deserialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
+template list<json> *TableRowHandler::read_and_deserialize(uint32_t &off_set, uint32_t &line_number, list<int> wanted_columns);
 
-template status_code TableRowHandler::deserialize_and_write(const list<json> &rows_information);
-template status_code TableRowHandler::deserialize_and_write(const json &rows_information);
+template status_code TableRowHandler::serialize_and_write(const list<json> &rows_information);
+template status_code TableRowHandler::serialize_and_write(const json &rows_information);

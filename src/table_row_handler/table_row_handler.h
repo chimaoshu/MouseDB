@@ -38,13 +38,13 @@ public:
     // 若truncate为true，打开时如果文件存在，那么会清空内容，适用于创建一个新文件写入的场景
     TableRowHandler(const std::string &file_path,
                     TableMetaHandler *&table_meta_handler,
-                    bool truncate = false,
-                    uint8_t cache_pages = 0);
+                    bool truncate,
+                    uint8_t cache_pages);
 
     ~TableRowHandler() = default;
 
     // 获取文件中的行数量，冷数据文件建立索引时需要用到
-    inline row_order get_number_of_rows_in_file();
+    row_order get_number_of_rows_in_file();
 
     // 传入：偏移行数、要读行数、想要的列
     // 从第off_set+1行开始读（比如off_set=0时，从第一行开始读），读line_number行中wanted_columns
@@ -61,7 +61,7 @@ public:
     // 调试用JSON、使用换Vector
     // 读取完需要释放内存
     template <class T>
-    T *read_and_serialize(uint32_t &off_set, uint32_t &line_number, std::list<int> wanted_columns);
+    T *read_and_deserialize(uint32_t &off_set, uint32_t &line_number, std::list<int> wanted_columns);
 
     // 读取后返回序列化为protobuf的数据
     // TODO
@@ -77,33 +77,34 @@ public:
     // ]
     // 调试用JSON、使用换Vector
     template <class T>
-    status_code deserialize_and_write(const T &rows_information);
+    status_code serialize_and_write(const T &rows_information);
 
     // 读取一行的数据，返回pair
     // pair第一个指针指向读取那行的内存
     // pair第二个指针指向由primary_key构成的vector的内存
     // 使用完毕需要释放内存
     // 适用于冷热数据归并时的旧冷数据文件
-    inline std::pair<void *, rbtree_key *> read_next_row_buffer_and_index();
+    std::pair<void *, rbtree_key *> read_next_row_buffer_and_index();
 
     // 从当前游标位置开始，一直读到文件末尾
     // 适用于冷热数据归并时的旧冷数据文件
     // 返回内存与行数
-    inline std::pair<void *, uint32_t> read_buffer_and_index_to_the_end();
+    inline std::pair<void *, uint32_t> read_buffer_and_index_to_the_end()
+    { return file_.read_lines_into_buffer(0, line_size_, 0, true, true); }
 
     // 读取某行，返回红黑树的主键
     // 当row_order为负数时，表明读下一行（不进行指针移动操作），默认为该情况
     // 适用于宕机后从热数据文件中恢复数据，建立有序索引
     // 当row_order不小于0时，表明读给定行号的一行
     // 适用于冷数据建立索引时的情况
-    inline rbtree_key *read_row_index(int row_order = -1);
+    rbtree_key *read_row_index(int row_order = -1);
 
     // 给定数据在第几行，直接读取那一行的数据，返回指针
     // 适用于冷热数据归并时的旧热数据文件
-    inline void *read_row_buffer(row_order line_order);
+    void *read_row_buffer(row_order line_order);
 
     // 把数据写入下一行，默认写入一行
     // 适用于冷热数据归并时的新冷数据文件
-    inline void write_rows(void *buffer, row_order line_number = 1);
+    void write_rows(void *buffer, row_order line_number = 1);
 };
 #endif // MOUSEDB_SRC_TABLE_ROW_HANDLER_TABLE_ROW_HANDLER_H_

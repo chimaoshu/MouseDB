@@ -36,17 +36,19 @@ struct compare_rule_for_primary_key
         // debug
         assert(x.size() == y.size());
 
-        for (int i = 0; i < x.size(); i++)
-        {
-            if (x[i] < y[i])
-            {
-                return true;
-            }
-            else if (x[i] > y[i])
-            {
-                return false;
-            }
-        }
+        return x < y;
+
+        // for (int i = 0; i < x.size(); i++)
+        // {
+        //     if (x[i] < y[i])
+        //     {
+        //         return true;
+        //     }
+        //     else if (x[i] > y[i])
+        //     {
+        //         return false;
+        //     }
+        // }
     }
 };
 

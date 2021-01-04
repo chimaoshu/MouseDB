@@ -56,15 +56,19 @@ private:
     std::map<std::string, ColdDataManager *> map_of_table_name_to_cold_data_manager_;
 
     // 返回对TableMetaHandler指针的引用，之所以要用引用是为了防止指针乱飞，双重释放等问题
-    inline TableMetaHandler *&get_table_meta_handler(const std::string &table_name);
+    inline TableMetaHandler *&get_table_meta_handler(const std::string &table_name)
+    {
+        // 返回表名对应的指向TableMetaHandler实例的指针的引用
+        return map_of_table_name_to_table_meta_handler_[table_name];
+    }
 
     // 返回对DataManager的引用，若不存在，则创建存储后返回，在程序关闭之前不做删除
-    inline HotDataManager *&get_hot_data_manager(const std::string &table_name);
-    inline ColdDataManager *&get_cold_data_manager(const std::string &table_name);
+     HotDataManager *&get_hot_data_manager(const std::string &table_name);
+     ColdDataManager *&get_cold_data_manager(const std::string &table_name);
 
     // 传入表名，修改对应map里面的DataManager为新的
-    inline void set_hot_data_manager_in_map(const std::string&table_name, HotDataManager *new_hot_data_manager);
-    inline void set_cold_data_manager_in_map(const std::string&table_name, ColdDataManager *new_cold_data_manager);
+     void set_hot_data_manager_in_map(const std::string &table_name, HotDataManager *new_hot_data_manager);
+     void set_cold_data_manager_in_map(const std::string &table_name, ColdDataManager *new_cold_data_manager);
 
     status_code dump_table_in_sub_thread(const std::string &table_name);
 
@@ -75,6 +79,9 @@ public:
     TablesHandler(const std::string &database_name_, const nlohmann::json &database_meta);
 
     ~TablesHandler();
+
+    // 查询 TODO
+    std::list<nlohmann::json> *query(const std::string &table_name);
 
     // 对某个table进行hot-dump操作
     status_code dump_table(const std::string &table_name);
@@ -96,7 +103,7 @@ public:
     // table_name：表名
     // table_meta：表头
     // db_mete_handler：对数据库元数据进行操作
-    status_code create(const std::string &table_directory, const std::string &table_name, nlohmann::json &table_meta, DatabaseMetaHandler &db_mete_handler);
+    status_code create_table(const std::string &table_directory, const std::string &table_name, nlohmann::json &table_meta, DatabaseMetaHandler &db_mete_handler);
 
     // 传入表名与DatabaseMetaHandler实例
     // 删除一个表，所做的工作包括：
@@ -104,7 +111,7 @@ public:
     status_code drop_table(const std::string &table_name, DatabaseMetaHandler &db_mete_handler);
 
     // 返回该数据库下所有表的表名
-    list<std::string> get_all_table_names();
+    std::list<std::string> get_all_table_names();
 };
 
 #endif // MOUSEDB_SRC_TABLE_HANDLER_H_

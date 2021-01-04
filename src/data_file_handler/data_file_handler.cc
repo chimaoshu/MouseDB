@@ -34,7 +34,17 @@ void DataFileHandler::close()
 
 string DataFileHandler::get_path() { return path_; }
 
-status_code DataFileHandler::open(const string &file_path, bool write, bool append, bool truncate, bool read)
+uint64_t DataFileHandler::get_file_size()
+{
+    file_.seekp(0, std::ios::end);
+    return file_.tellp();
+}
+
+status_code DataFileHandler::open(const string &file_path,
+                                  bool write,
+                                  bool append,
+                                  bool truncate,
+                                  bool read)
 {
     // 根据传入参数设置open_mode
     ios::open_mode open_mode_of_file = ios::binary;
@@ -91,12 +101,6 @@ status_code DataFileHandler::open(const string &file_path, bool write, bool appe
     return error_code::SUCCESS;
 }
 
-inline uint64_t DataFileHandler::get_file_size()
-{
-    file_.seekp(0, ios::end);
-    return file_.tellp();
-}
-
 bool DataFileHandler::is_open() { return file_.is_open(); }
 
 // 文件尾追加字符串
@@ -114,7 +118,7 @@ status_code DataFileHandler::append(const string &string_to_write)
 }
 
 // 移动游标到指定位置，默认移动到文件头，适合接下来进行顺序读
-void DataFileHandler::move_g_cursor(int position=0)
+void DataFileHandler::move_g_cursor(int position)
 {
     file_.seekg(position);
 }
@@ -282,7 +286,7 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     uint64_t start_position,
     const int &line_size,
     const int &number_of_line,
-    bool begin_at_the_current_cursor = false,
+    bool begin_at_the_current_cursor,
     bool read_to_the_end)
 {
     // 从游标当前位置开始，适合顺序读的情景
@@ -385,7 +389,7 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
 void *DataFileHandler::read_primary_key_into_buffer(
     uint64_t start_position,
     const int &primary_keys_size,
-    bool begin_at_the_current_cursor=false)
+    bool begin_at_the_current_cursor)
 {
     if (begin_at_the_current_cursor)
         start_position = file_.tellg();
