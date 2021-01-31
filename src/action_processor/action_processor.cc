@@ -102,7 +102,7 @@ void UserAction::use_a_database(const string &database_name)
 void UserAction::show_table_names()
 {
     // debug
-    // error_code::ERROR_TABLE_NOT_OPENED
+    // status::ERROR_TABLE_NOT_OPENED
     assert(current_used_database_);
 
     list<string> table_names = current_used_database_->get_all_table_names();
@@ -123,7 +123,7 @@ void UserAction::show_table_names()
 void UserAction::create_a_table(const string &table_name, json &table_meta)
 {
     // debug
-    // error_code::ERROR_TABLE_NOT_OPENED
+    // status::ERROR_TABLE_NOT_OPENED
     assert(current_used_database_);
     
     //  data/数据库名/表名/
@@ -133,7 +133,7 @@ void UserAction::create_a_table(const string &table_name, json &table_meta)
     Tools::make_dir(default_table_dir);
 
     // 建表
-    status_code err = current_used_database_->create(default_table_dir, table_name, table_meta, db_meta_handler_);
+    status_code err = current_used_database_->create_table(default_table_dir, table_name, table_meta, db_meta_handler_);
 
     if (err)
         cout << "table create error:" << err << '\n';

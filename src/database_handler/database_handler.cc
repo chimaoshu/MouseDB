@@ -45,7 +45,7 @@ status_code DatabaseHandler::drop(const string &database_name)
     auto i = database_meta_.find(database_name);
     if (i == database_meta_.end())
     {
-        return error_code::ERROR_DATABASE_NOT_EXISTS;
+        return status::ERROR_DATABASE_NOT_EXISTS;
     }
     else
     {

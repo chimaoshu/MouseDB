@@ -16,7 +16,7 @@ template <typename T>
 using respond = std::pair<T, status_code>;
 
 // 定义状态码
-namespace error_code
+namespace status
 {
     const status_code SUCCESS = 0;
 
@@ -56,6 +56,6 @@ namespace error_code
     // Other
     const status_code ERROR_MEMORY_ALLOCATION_FAIL = 81;
 
-} // namespace error_code
+} // namespace status
 
 #endif // MOUSEDB_SRC_EXCEPTION_HANDLER_EXCEPTION_HANDLER_H_

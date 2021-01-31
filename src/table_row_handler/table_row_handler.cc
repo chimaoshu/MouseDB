@@ -1,4 +1,5 @@
 #include "src/table_row_handler/table_row_handler.h"
+#include "src/exception_handler/exception_handler.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -62,7 +63,7 @@ T *TableRowHandler::read_and_deserialize(uint32_t &off_set, uint32_t &line_numbe
         {
             // 变量的初始读取地址
             int off_set_address = i * line_size_ + off_set_of_each_column_[*it];
-            void *initial_address = buffer_pointer + off_set_address;
+            void *initial_address = (char *)buffer_pointer + off_set_address;
 
             // 传入变量ID，映射为模板元变量，转化指针类型读取后push_back到row中
             // 具体实现参考buffer_reader.h
@@ -92,7 +93,7 @@ status_code TableRowHandler::serialize_and_write(const T &rows_information)
 
     if (!buffer)
     {
-        return error_code::ERROR_MEMORY_ALLOCATION_FAIL;
+        return status::ERROR_MEMORY_ALLOCATION_FAIL;
     }
 
     // 遍历每一行
@@ -110,21 +111,21 @@ status_code TableRowHandler::serialize_and_write(const T &rows_information)
         {
             // 计算从buffer写入该变量的初始地址
             int off_set_address = line_size_ * row_order + off_set_of_each_column_[column_order];
-            void *initial_address = buffer + off_set_address;
+            void *initial_address = (char *)buffer + off_set_address;
 
             // 写入buffer
             write_buffer<10>(type_of_each_column_[column_order], initial_address, it);
         }
     }
 
-    status_code code = file_.append(buffer, buffer_size);
+    file_.append(buffer, buffer_size);
 
     if (buffer)
     {
         delete[](char *) buffer;
     }
 
-    return code;
+    return status::SUCCESS;
 }
 
 // 读取一行的数据，返回pair
@@ -156,7 +157,7 @@ pair<void *, rbtree_key *> TableRowHandler::read_next_row_buffer_and_index()
         new_keys->push_back(*(primary_key_type *)key_address);
 
         // 移动到下一变量的读取位置
-        key_address = key_address + sizeof(primary_key_type);
+        key_address = (char *)key_address + sizeof(primary_key_type);
     }
 
     return pair<void *, rbtree_key *>(buffer_pointer, new_keys);
@@ -210,7 +211,7 @@ rbtree_key *TableRowHandler::read_row_index(int row_order)
         new_keys->push_back(*(primary_key_type *)key_address);
 
         // 移动到下一变量的读取位置
-        key_address = key_address + sizeof(primary_key_type);
+        key_address = (char *)key_address + sizeof(primary_key_type);
     }
 
     // 释放

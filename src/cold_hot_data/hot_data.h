@@ -41,12 +41,12 @@ private:
 
     // 传入两个key值，返回所有在两者中间的节点的值组成的链表，用完需要自行释放空间
     // 这里不做索引优化，纯查找位于两个pk之间的值，需保证传入的参数符合primary key格式
-    std::list<row_order> *find_values_between_primary_keys(
+    std::list<row_order> find_values_between_primary_keys(
         const rbtree_key &min, const rbtree_key &max);
 
     // 寻找primary key等于给定key值的所有值组成的链表，用完需要自行释放空间
     // 适用于where id = 的情况
-    std::list<row_order> *find_values_by_primary_keys(const rbtree_key &key);
+    std::list<row_order> find_values_by_primary_keys(const rbtree_key &key);
 
     // TODO 删除操作
 
@@ -65,7 +65,7 @@ public:
     ~HotDataManager();
 
     // TODO
-    std::list<row_order> *query();
+    std::list<row_order> query();
 
     // 到时候看一下是否某些类内部使用的数据库的路径是否需要改，不然会出bug
     // hot-dump的过程：

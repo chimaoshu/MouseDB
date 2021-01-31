@@ -31,7 +31,7 @@ private:
     // 传入两个主键，获取处于两者之间的数据在文件中的行数（min<=output<=max），包括min==max的情况
     // TODO 以后加个min<answer<max
     // 目前是min<=answer<=max
-    std::list<row_order> *find_values_between_primary_keys(const rbtree_key &min, const rbtree_key &max);
+    std::list<row_order> find_values_between_primary_keys(const rbtree_key &min, const rbtree_key &max);
 
 public:
     // 读取冷数据文件数据，建立索引

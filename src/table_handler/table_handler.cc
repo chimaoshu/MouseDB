@@ -225,7 +225,7 @@ status_code TablesHandler::dump_table_in_sub_thread(const string &table_name)
     delete old_hot_data_manager;
     this->set_hot_data_manager_in_map(table_name, new_hot_data_manager);
 
-    return error_code::SUCCESS;
+    return status::SUCCESS;
 }
 
 status_code TablesHandler::dump_table(const string &table_name)

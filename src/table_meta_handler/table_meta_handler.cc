@@ -1,4 +1,5 @@
 #include "table_meta_handler.h"
+#include "src/exception_handler/exception_handler.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -117,16 +118,32 @@ TableMetaHandler::TableMetaHandler(const string &table_meta_path, json &table_me
 status_code TableMetaHandler::save(const string &table_meta_path)
 {
     DataFileHandler file;
-    file.open(table_meta_path, 1, 0, 1, 0);
-    return file.append(table_meta_.dump());
+
+    status_code err = file.open(table_meta_path, 1, 0, 1, 0);
+
+    // 路径文件不存在
+    if (err)
+        return err;
+
+    file.append(table_meta_.dump());
+
+    return status::SUCCESS;
 }
 
 // 覆盖原文件存储
 status_code TableMetaHandler::save()
 {
     DataFileHandler file;
-    file.open(table_meta_path_, 1, 0, 1, 0);
-    return file.append(table_meta_.dump()); // 返回错误码
+
+    status_code err = file.open(table_meta_path_, 1, 0, 1, 0);
+
+    // 路径文件不存在
+    if (err)
+        return err;
+
+    file.append(table_meta_.dump());
+
+    return status::SUCCESS;
 }
 
 // 从磁盘中读取表头信息
@@ -149,7 +166,7 @@ status_code TableMetaHandler::load()
     if (!p.first.empty())
     {
         table_meta_ = json::parse(p.first);
-        return error_code::SUCCESS;
+        return status::SUCCESS;
     }
     else
     {
@@ -210,7 +227,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
 {
     // 若已有缓存，直接返回
     if (!off_set_of_each_column_.empty())
-        return error_code::SUCCESS;
+        return status::SUCCESS;
 
     json &primary_keys = table_meta_["primary_key"];
     json &other_keys = table_meta_["other_keys"];
@@ -263,7 +280,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         auto type_it = it->find("type");
         if (type_it == it->end())
         {
-            return error_code::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+            return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
         }
 
         // key的数据种类
@@ -302,7 +319,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         }
         else
         {
-            return error_code::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+            return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
         }
 
         // 设置从列名到列序号的映射，列序号从1开始
@@ -323,7 +340,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         auto type_it = it->find("type");
         if (type_it == it->end())
         {
-            return error_code::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+            return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
         }
 
         // key的数据种类
@@ -362,7 +379,7 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         }
         else
         {
-            return error_code::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+            return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
         }
 
         // 设置从列名到列序号的映射
@@ -376,5 +393,5 @@ status_code TableMetaHandler::set_column_info_and_line_size()
         i++;
     }
 
-    return error_code::SUCCESS;
+    return status::SUCCESS;
 }

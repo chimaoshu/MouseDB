@@ -81,7 +81,7 @@ public:
     ~TablesHandler();
 
     // 查询 TODO
-    std::list<nlohmann::json> *query(const std::string &table_name);
+    std::list<nlohmann::json> query(const std::string &table_name);
 
     // 对某个table进行hot-dump操作
     status_code dump_table(const std::string &table_name);

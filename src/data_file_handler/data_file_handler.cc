@@ -1,4 +1,5 @@
 #include "data_file_handler.h"
+#include "src/exception_handler/exception_handler.h"
 
 using namespace std;
 
@@ -41,13 +42,13 @@ uint64_t DataFileHandler::get_file_size()
 }
 
 status_code DataFileHandler::open(const string &file_path,
-                                  bool write,
-                                  bool append,
-                                  bool truncate,
-                                  bool read)
+                           bool write,
+                           bool append,
+                           bool truncate,
+                           bool read)
 {
     // 根据传入参数设置open_mode
-    ios::open_mode open_mode_of_file = ios::binary;
+    ios::openmode open_mode_of_file = ios::binary;
 
     if (write)
     {
@@ -71,8 +72,9 @@ status_code DataFileHandler::open(const string &file_path,
 
         file_.open(file_path.c_str(), (std::ios_base::openmode)open_mode_of_file);
 
+        // 路径错误或打开方式错误
         if (!file_.is_open())
-            return error_code::ERROR_WRONG_OPEN_MODE;
+            return status::ERROR_FILE_NOT_EXISTS;
 
         // 获取文件大小
         file_.seekg(0, ios::end);
@@ -83,8 +85,9 @@ status_code DataFileHandler::open(const string &file_path,
         open_mode_of_file |= ios::in;
         file_.open(file_path.c_str(), (std::ios_base::openmode)open_mode_of_file);
 
+        // ERROR_FILE_NOT_EXISTS
         if (!file_.is_open())
-            return error_code::ERROR_FILE_NOT_EXISTS;
+            return status::ERROR_FILE_NOT_EXISTS;
 
         // 获取文件大小
         file_.seekp(0, ios::end);
@@ -98,23 +101,23 @@ status_code DataFileHandler::open(const string &file_path,
     writable_ = write;
     truncate_ = truncate;
 
-    return error_code::SUCCESS;
+    return status::SUCCESS;
 }
 
 bool DataFileHandler::is_open() { return file_.is_open(); }
 
 // 文件尾追加字符串
-status_code DataFileHandler::append(const string &string_to_write)
+void DataFileHandler::append(const string &string_to_write)
 {
-    if (!writable_)
-        return error_code::ERROR_NOT_APPENDABLE;
+    // ERROR_NOT_APPENDABLE
+    assert(writable_);
 
     if (!appendable_)
         file_.seekp(0, ios::end);
 
     file_.write(string_to_write.c_str(), string_to_write.size());
 
-    return error_code::SUCCESS;
+    return;
 }
 
 // 移动游标到指定位置，默认移动到文件头，适合接下来进行顺序读
@@ -124,9 +127,9 @@ void DataFileHandler::move_g_cursor(int position)
 }
 
 // 文件尾追加二进制数据
-status_code DataFileHandler::append(void *buffer, int buffer_size)
+void DataFileHandler::append(void *buffer, int buffer_size)
 {
-    // error_code::ERROR_NOT_APPENDABLE;
+    // ERROR_NOT_APPENDABLE;
     assert(writable_);
 
     if (!appendable_)
@@ -139,26 +142,14 @@ status_code DataFileHandler::append(void *buffer, int buffer_size)
     int order_of_last_page = end_position / page_size_;
     LRU_delete(order_of_last_page);
 
-    return error_code::SUCCESS;
-}
-
-// 读字符串
-respond<string> DataFileHandler::read_text_line()
-{
-    if (writable_ && !readable_)
-        return respond<string>("", error_code::ERROR_NOT_READABLE);
-
-    string next_line;
-    getline(file_, next_line);
-
-    return respond<string>(next_line, error_code::SUCCESS);
+    return;
 }
 
 // 读字符串
 respond<string> DataFileHandler::read_all_text()
 {
     if (writable_ && !readable_)
-        return respond<string>("", error_code::ERROR_NOT_READABLE);
+        return respond<string>("", status::ERROR_NOT_READABLE);
 
     // 移动至末尾
     file_.seekg(0, ios::end);
@@ -168,12 +159,12 @@ respond<string> DataFileHandler::read_all_text()
 
     // 回到开头
     file_.seekg(0, ios::beg);
-
+    
     // 加一位存储\0
     char *char_file_content = new char[buffer_length + 1];
 
     if (!char_file_content)
-        return respond<string>("", error_code::ERROR_MEMORY_ALLOCATION_FAIL);
+        return respond<string>("", status::ERROR_MEMORY_ALLOCATION_FAIL);
 
     file_.read(char_file_content, buffer_length);
     char_file_content[buffer_length] = '\0';
@@ -182,7 +173,7 @@ respond<string> DataFileHandler::read_all_text()
 
     delete[] char_file_content;
 
-    return respond<string>(file_content, error_code::SUCCESS);
+    return respond<string>(file_content, status::SUCCESS);
 }
 
 void *DataFileHandler::read_page_to_memory(uint32_t page_order)
@@ -235,14 +226,18 @@ void *DataFileHandler::LRU_get(uint32_t page_order)
     // ERROR_DEMANDING_PAGE_TO_CACHE_EXCEEDS_THE_FILE_SIZE
     assert(buffer);
 
-    // 如果已满
+    // 不缓存直接返回
+    if (number_of_page_to_cache_ == 0)
+        return buffer;
+
+    // 如果已满，则删除最后一个缓存
     if (LRU_cache_list.size() == number_of_page_to_cache_)
     {
         // 找到最后一项
         uint32_t order_of_page_to_delete = LRU_cache_list.back();
         auto it = pages_cache_.find(order_of_page_to_delete);
 
-        // error_code::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH
+        // status::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH
         assert(it != pages_cache_.end());
 
         // 淘汰掉优先级最低缓存
@@ -331,7 +326,7 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     // 计算磁盘读取的结束地址
     int end_position = start_position + buffer_size;
 
-    // error_code::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
+    // status::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
     assert(end_position <= file_size_);
 
     // 计算最后需要读取到哪一页（包括边界情况）
@@ -359,12 +354,12 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     {
         // 读取到结尾
         current_position = page_size_ - start_position_in_the_first_page;
-        memcpy(new_buffer, first_page + start_position_in_the_first_page, current_position);
+        memcpy(new_buffer, (char *)first_page + start_position_in_the_first_page, current_position);
     }
     else
     {
         // 第一页都没读完就结束了或者第一页正好读完，直接return
-        memcpy(new_buffer, first_page + start_position_in_the_first_page, buffer_size);
+        memcpy(new_buffer, (char *)first_page + start_position_in_the_first_page, buffer_size);
         return pair<void *, int>(new_buffer, available_lines);
     }
 
@@ -374,13 +369,13 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
     {
         // 读取整个page_size
         void *page = LRU_get(order_of_current_page);
-        memcpy(new_buffer + current_position, page, page_size_);
+        memcpy((char *)new_buffer + current_position, page, page_size_);
         current_position += page_size_;
     }
 
     // 最后一页也需要特殊处理
     void *last_page = LRU_get(order_of_last_page);
-    memcpy(new_buffer + current_position, last_page, end_position % page_size_);
+    memcpy((char *)new_buffer + current_position, last_page, end_position % page_size_);
 
     // 返回内存块与可用的行数
     return pair<void *, int>(new_buffer, available_lines);
@@ -416,7 +411,7 @@ void *DataFileHandler::read_primary_key_into_buffer(
     // 计算磁盘读取的结束地址
     int end_position = start_position + buffer_size;
 
-    // error_code::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
+    // status::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
     assert(end_position <= file_size_);
 
     // 计算最后需要读取到哪一页（包括边界情况）
@@ -444,12 +439,12 @@ void *DataFileHandler::read_primary_key_into_buffer(
     {
         // 读取到结尾
         current_position = page_size_ - start_position_in_the_first_page;
-        memcpy(new_buffer, first_page + start_position_in_the_first_page, current_position);
+        memcpy(new_buffer, (char *)first_page + start_position_in_the_first_page, current_position);
     }
     else
     {
         // 第一页都没读完就结束了或者第一页正好读完，直接return
-        memcpy(new_buffer, first_page + start_position_in_the_first_page, buffer_size);
+        memcpy(new_buffer, (char *)first_page + start_position_in_the_first_page, buffer_size);
         return new_buffer;
     }
 
@@ -459,13 +454,13 @@ void *DataFileHandler::read_primary_key_into_buffer(
     {
         // 读取整个page_size
         void *page = LRU_get(order_of_current_page);
-        memcpy(new_buffer + current_position, page, page_size_);
+        memcpy((char *)new_buffer + current_position, page, page_size_);
         current_position += page_size_;
     }
 
     // 最后一页也需要特殊处理
     void *last_page = LRU_get(order_of_last_page);
-    memcpy(new_buffer + current_position, last_page, end_position % page_size_);
+    memcpy((char *)new_buffer + current_position, last_page, end_position % page_size_);
 
     // 返回内存块与可用的行数
     return new_buffer;

@@ -1,4 +1,5 @@
 #include "src/cold_hot_data/cold_data.h"
+#include "src/exception_handler/exception_handler.h"
 
 using namespace std;
 
@@ -36,6 +37,8 @@ status_code ColdDataManager::build_index()
 
         order_to_read += 128;
     }
+
+    return status::SUCCESS;
 }
 
 // 读取冷数据文件数据，建立索引
@@ -47,7 +50,7 @@ ColdDataManager::ColdDataManager(const string &table_dir,
                                  TableMetaHandler *&table_meta_handler,
                                  const string cold_data_file_name,
                                  uint8_t index_interval_rows_number)
-    : table_dir_(table_dir_),
+    : table_dir_(table_dir),
       index_interval_rows_number_(index_interval_rows_number)
 {
 
@@ -71,7 +74,7 @@ ColdDataManager::~ColdDataManager()
 // TODO 以后加个min<answer<max，需要连同前面的start_row、end_row一起改
 // 目前是min <= answer <= max
 // 返回符合条件的行在冷数据文件中的行数
-list<row_order> *ColdDataManager::find_values_between_primary_keys(const rbtree_key &min, const rbtree_key &max)
+list<row_order> ColdDataManager::find_values_between_primary_keys(const rbtree_key &min, const rbtree_key &max)
 {
     row_order start_scanning_row = -1, end_scanning_row = -1;
 
@@ -174,7 +177,7 @@ list<row_order> *ColdDataManager::find_values_between_primary_keys(const rbtree_
     rbtree_key *primary_key_of_current_row = NULL;
 
     // 返回符合条件的行在文件中的行数
-    list<row_order> *output = new list<row_order>;
+    list<row_order> output;
 
     // 表示：找到第一个符合条件的min行，开始进行添加
     bool start_append_min = false;
@@ -189,7 +192,7 @@ list<row_order> *ColdDataManager::find_values_between_primary_keys(const rbtree_
             if (*primary_key_of_current_row == min)
             {
                 start_append_min = true;
-                output->push_back(current_row);
+                output.push_back(current_row);
             }
             else
             {
@@ -200,7 +203,7 @@ list<row_order> *ColdDataManager::find_values_between_primary_keys(const rbtree_
         {
             if (*primary_key_of_current_row <= max)
             {
-                output->push_back(current_row);
+                output.push_back(current_row);
             }
             else
             {
@@ -210,5 +213,6 @@ list<row_order> *ColdDataManager::find_values_between_primary_keys(const rbtree_
         }
     }
 
+    // 此处触发RVO机制
     return output;
 }

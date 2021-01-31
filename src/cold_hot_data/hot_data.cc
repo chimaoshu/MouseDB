@@ -320,26 +320,27 @@ void HotDataManager::change_to_switch_mode()
 
 // TODO 以后加个min<answer<max
 // 目前是min<=answer<=max
-list<row_order> *HotDataManager::find_values_by_primary_keys(const rbtree_key &key)
+list<row_order> HotDataManager::find_values_by_primary_keys(const rbtree_key &key)
 {
-    list<row_order> *values = new list<row_order>;
+    list<row_order> values;
 
     auto res = tree_.equal_range(key);
     for (auto it = res.first; it != res.second; it++)
     {
-        values->push_back((*it).second);
+        values.push_back((*it).second);
     }
 
+    // ROV
     return values;
 }
 
-list<row_order> *HotDataManager::find_values_between_primary_keys(
+list<row_order> HotDataManager::find_values_between_primary_keys(
     const rbtree_key &min, const rbtree_key &max)
 {
     // debug
     assert(max.size() == min.size() && compare_rule_for_primary_key()(min, max));
 
-    list<row_order> *values = new list<row_order>;
+    list<row_order> values;
 
     // 第一个大于等于min的值
     auto begin_it = tree_.lower_bound(min);
@@ -349,8 +350,9 @@ list<row_order> *HotDataManager::find_values_between_primary_keys(
 
     for (; begin_it != end_it; begin_it++)
     {
-        values->push_back((*begin_it).second);
+        values.push_back((*begin_it).second);
     }
 
+    // ROV
     return values;
 }

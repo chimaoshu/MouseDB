@@ -96,10 +96,10 @@ public:
     void close();
 
     // 在文件末尾追加字符串，用于读JSON
-    status_code append(const std::string &string_to_write);
+    void append(const std::string &string_to_write);
 
     // 在文件末尾追加二进制数据，用于读mdb
-    status_code append(void *buffer, int buffer_size);
+    void append(void *buffer, int buffer_size);
 
     // 从initial_adress开始，以每行line_size的大小，读number_of_line行
     // 若begin_at_the_current_cursor=true，则不是从initial_adress开始
@@ -120,10 +120,6 @@ public:
         uint64_t start_position,
         const int &primary_keys_size,
         bool begin_at_the_current_cursor = false);
-
-    // 读取一行字符串，返回字符串和状态码
-    // 在异常或者已读取到底的情况下，字符串为空
-    respond<std::string> read_text_line();
 
     // 读取整个文件内容，返回字符串和状态码
     // 在异常或者已读取到底的情况下，字符串为空
