@@ -1,10 +1,10 @@
 #ifndef MOUSEDB_SRC_TOOLS_RBTREE_H_
 #define MOUSEDB_SRC_TOOLS_RBTREE_H_
 
+#include <iostream>
+#include <list>
 #include <map>
 #include <vector>
-#include <list>
-#include <iostream>
 
 #include "src/tools/type.h"
 
@@ -28,40 +28,34 @@ typedef rbtree_value rbtree_node;
 // primary key的比较规则，若x小于y，返回真
 // 比较规则：有限比较第一个，若相等则比较下一个
 // 即：按照字典序比较大小
-struct compare_rule_for_primary_key
-{
-    inline bool
-    operator()(const rbtree_key &x, const rbtree_key &y) const
-    {
-        // debug
-        assert(x.size() == y.size());
+struct compare_rule_for_primary_key {
+  inline bool operator()(const rbtree_key &x, const rbtree_key &y) const {
+    // debug
+    assert(x.size() == y.size());
 
-        return x < y;
+    return x < y;
 
-        // for (int i = 0; i < x.size(); i++)
-        // {
-        //     if (x[i] < y[i])
-        //     {
-        //         return true;
-        //     }
-        //     else if (x[i] > y[i])
-        //     {
-        //         return false;
-        //     }
-        // }
-    }
+    // for (int i = 0; i < x.size(); i++)
+    // {
+    //     if (x[i] < y[i])
+    //     {
+    //         return true;
+    //     }
+    //     else if (x[i] > y[i])
+    //     {
+    //         return false;
+    //     }
+    // }
+  }
 };
-
 
 // 定义一颗红黑树：以primary key为键，以数据在
 // 文件中的行数为值，以两者构成的pair作为红黑树的节点
 // 定义从节点得到primary key的规则是获取pair的第一个
 // 定义节点的比较规则是上述定义的比较规则
-typedef std::_Rb_tree<
-    const rbtree_key,
-    rbtree_node,
-    std::_Select1st<rbtree_node>,
-    compare_rule_for_primary_key>
+typedef std::_Rb_tree<const rbtree_key, rbtree_node,
+                      std::_Select1st<rbtree_node>,
+                      compare_rule_for_primary_key>
     rbtree;
-    
+
 #endif

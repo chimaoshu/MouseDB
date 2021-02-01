@@ -1,10 +1,10 @@
 #ifndef MOUSEDB_SRC_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 #define MOUSEDB_SRC_TABLE_META_HANDLER_TABLE_META_HANDLER_H_
 
-#include <string>
 #include <fstream>
-#include <map>
 #include <list>
+#include <map>
+#include <string>
 
 // json解析库
 #include "third_part/Json/single_include/nlohmann/json.hpp"
@@ -25,135 +25,138 @@
 // 由于其他类的table_meta均是对此类table_meta的引用
 // 优点是该类对table_meta的所有更改会自适应到其他引用处
 // 缺点是对于每一个实例，你需要一直保留着，直到你不再需要修改或读取元数据
-class TableMetaHandler
-{
+class TableMetaHandler {
 private:
-    // 表元数据
-    nlohmann::json table_meta_;
+  // 表元数据
+  nlohmann::json table_meta_;
 
-    // 表元数据的存储路径
-    std::string table_meta_path_;
+  // 表元数据的存储路径
+  std::string table_meta_path_;
 
-    // 记录一行在磁盘中所占byte数
-    // 当首次获取时会进行计算并赋值
-    // 后续获取时会直接读取
-    uint16_t line_size_ = 0;
+  // 记录一行在磁盘中所占byte数
+  // 当首次获取时会进行计算并赋值
+  // 后续获取时会直接读取
+  uint16_t line_size_ = 0;
 
-    // 记录每一列对应的地址偏移，以byte为单位，用于读写时进行定位
-    // 首元素存储长度
-    // 当首次获取时会进行计算并赋值
-    // 后续获取时会直接读取
-    std::vector<uint16_t> off_set_of_each_column_;
+  // 记录每一列对应的地址偏移，以byte为单位，用于读写时进行定位
+  // 首元素存储长度
+  // 当首次获取时会进行计算并赋值
+  // 后续获取时会直接读取
+  std::vector<uint16_t> off_set_of_each_column_;
 
-    // 用数组来存储每列的key种类，首元素存储长度
-    // 当首次获取时会进行计算并赋值
-    // 后续获取时会直接读取
-    // 1:int_8_t
-    // 2:int_16_t
-    // 3:int_32_t
-    // 4:int_64_t
-    // 5:uint_8_t
-    // 6:uint_16_t
-    // 7:uint_32_t
-    // 8:uint_64_t
-    // 9:float
-    // 10:double
-    // -123:char（负数表示char，数值表示char的长度）（其实char的长度也可以通过前后偏移相减得到）
-    std::vector<int8_t> type_of_each_column_;
+  // 用数组来存储每列的key种类，首元素存储长度
+  // 当首次获取时会进行计算并赋值
+  // 后续获取时会直接读取
+  // 1:int_8_t
+  // 2:int_16_t
+  // 3:int_32_t
+  // 4:int_64_t
+  // 5:uint_8_t
+  // 6:uint_16_t
+  // 7:uint_32_t
+  // 8:uint_64_t
+  // 9:float
+  // 10:double
+  // -123:char（负数表示char，数值表示char的长度）（其实char的长度也可以通过前后偏移相减得到）
+  std::vector<int8_t> type_of_each_column_;
 
-    // 存储每一列的列名与对应的序号
-    std::map<std::string, int> map_from_column_name_to_column_order_;
+  // 存储每一列的列名与对应的序号
+  std::map<std::string, int> map_from_column_name_to_column_order_;
 
-    // off_set_of_each_column_
-    // type_of_each_column_
-    // map_from_column_name_to_column_order_
-    // 对以上三个关于行和列的信息进行计算并存储
-    status_code set_column_info_and_line_size();
+  // off_set_of_each_column_
+  // type_of_each_column_
+  // map_from_column_name_to_column_order_
+  // 对以上三个关于行和列的信息进行计算并存储
+  status_code set_column_info_and_line_size();
 
-    // 通过类成员中的table_meta_path_读取文件数据
-    status_code load();
+  // 通过类成员中的table_meta_path_读取文件数据
+  status_code load();
 
 public:
-    // 以下三个函数：
-    // 当首次调用时会进行计算并赋值
-    // 后续调用时会直接读取
-    uint16_t get_line_size();
-    std::vector<uint16_t> &get_off_set_of_each_column();
-    std::vector<int8_t> &get_type_of_each_column();
+  // 以下三个函数：
+  // 当首次调用时会进行计算并赋值
+  // 后续调用时会直接读取
+  uint16_t get_line_size();
+  std::vector<uint16_t> &get_off_set_of_each_column();
+  std::vector<int8_t> &get_type_of_each_column();
 
-    // 获取主键数量
-    inline int get_primary_key_number()
-    {return table_meta_["primary_key"].size();}
+  // 获取主键数量
+  inline int get_primary_key_number() {
+    return table_meta_["primary_key"].size();
+  }
 
-    // 获取键数量
-    inline int get_key_number()
-    {return table_meta_["primary_key"].size() + table_meta_["other_keys"].size();}
+  // 获取键数量
+  inline int get_key_number() {
+    return table_meta_["primary_key"].size() + table_meta_["other_keys"].size();
+  }
 
-    const std::string get_table_name();
+  const std::string get_table_name();
 
-    // 获取表元数据的存储路径，只读
-    const std::string &get_table_meta_path();
+  // 获取表元数据的存储路径，只读
+  const std::string &get_table_meta_path();
 
-    // 获取表元数据，只读
-    const nlohmann::json &get_table_meta();
+  // 获取表元数据，只读
+  const nlohmann::json &get_table_meta();
 
-    // ==========================================
+  // ==========================================
 
-    // 获取正在使用的热数据文件名，若不存在返回空字符串
-    // 只用于hot-dump
-    const std::string get_current_used_hot_data_file_name();
+  // 获取正在使用的热数据文件名，若不存在返回空字符串
+  // 只用于hot-dump
+  const std::string get_current_used_hot_data_file_name();
 
-    // 获取新的热数据文件名，若不存在返回空字符串
-    // 只用于hot-dump
-    const std::string get_new_hot_data_file_name();
+  // 获取新的热数据文件名，若不存在返回空字符串
+  // 只用于hot-dump
+  const std::string get_new_hot_data_file_name();
 
-    // ==========================================
+  // ==========================================
 
-    // 获取正在使用的冷数据文件名，若不存在返回空字符串
-    // 只用于hot-dump
-    const std::string get_current_used_cold_data_file_name();
+  // 获取正在使用的冷数据文件名，若不存在返回空字符串
+  // 只用于hot-dump
+  const std::string get_current_used_cold_data_file_name();
 
-    // 获取新的冷数据文件名，若不存在返回空字符串
-    // 只用于hot-dump
-    const std::string get_new_cold_data_file_name();
+  // 获取新的冷数据文件名，若不存在返回空字符串
+  // 只用于hot-dump
+  const std::string get_new_cold_data_file_name();
 
-    // ==========================================
+  // ==========================================
 
-    // 设置新的热数据文件名，需要手动使用save保存到磁盘
-    // 用于hot-dump的switch阶段
-    void set_new_hot_data_file_name(const std::string &new_hot_data_file_name);
+  // 设置新的热数据文件名，需要手动使用save保存到磁盘
+  // 用于hot-dump的switch阶段
+  void set_new_hot_data_file_name(const std::string &new_hot_data_file_name);
 
-    // 设置新的冷数据current_used，并将其添加到history中
-    // 用于hot-dump的switch阶段
-    void set_new_cold_data_file_name(const std::string &new_cold_data_file_name);
+  // 设置新的冷数据current_used，并将其添加到history中
+  // 用于hot-dump的switch阶段
+  void set_new_cold_data_file_name(const std::string &new_cold_data_file_name);
 
-    // ==========================================
+  // ==========================================
 
-    // 让新的热数据文件转正，需要手动save保存到磁盘
-    // 用于hot-dump的switch阶段
-    void change_new_hot_data_file_to_current_used();
+  // 让新的热数据文件转正，需要手动save保存到磁盘
+  // 用于hot-dump的switch阶段
+  void change_new_hot_data_file_to_current_used();
 
-    // 让新的冷数据文件转正，需要手动save保存到磁盘
-    // 用于hot-dump的switch阶段
-    void change_new_cold_data_file_to_current_used();
+  // 让新的冷数据文件转正，需要手动save保存到磁盘
+  // 用于hot-dump的switch阶段
+  void change_new_cold_data_file_to_current_used();
 
-    // ==========================================
+  // ==========================================
 
-    // TableMetaHandler() = delete;
+  // TableMetaHandler() = delete;
 
-    // 传入表头路径，通过load函数读取表头数据进行构造
-    TableMetaHandler(const std::string &table_meta_path);
+  // 传入表头路径，通过load函数读取表头数据进行构造
+  TableMetaHandler(const std::string &table_meta_path);
 
-    // 传入表路径、表头数据直接构造
-    TableMetaHandler(const std::string &table_meta_path, nlohmann::json &table_meta);
+  // 传入表路径、表头数据直接构造
+  TableMetaHandler(const std::string &table_meta_path,
+                   nlohmann::json &table_meta);
 
-    // 使用传入的路径保存表头文件（另存为）
-    status_code save(const std::string &table_meta_path);
+  // 使用传入的路径保存表头文件（另存为）
+  status_code save(const std::string &table_meta_path);
 
-    // 使用类成员中的表头路径保存表头文件（替换原文件内容）
-    status_code save();
+  // 使用类成员中的表头路径保存表头文件（替换原文件内容）
+  status_code save();
 
-    // 传入列名，获取对应的列序号并从小到大排序返回
-    std::list<int> get_column_orders_by_names(const std::list<std::string> &column_names);
+  // 传入列名，获取对应的列序号并从小到大排序返回
+  std::list<int>
+  get_column_orders_by_names(const std::list<std::string> &column_names);
 };
 #endif // MOUSEDB_SRC_TABLE_META_HANDLER_H_

@@ -5,152 +5,151 @@ using json = nlohmann::json;
 
 UserAction::UserAction()
     : current_dir_name_(get_current_dir_name()),
-      db_meta_dir_(current_dir_name_ + "/data"),
-      db_meta_handler_(db_meta_dir_),
-      db_handler_(db_meta_handler_, db_meta_dir_)
-{
-}
+      db_meta_dir_(current_dir_name_ + "/data"), db_meta_handler_(db_meta_dir_),
+      db_handler_(db_meta_handler_, db_meta_dir_) {}
 
 UserAction::UserAction(string work_folder)
-    : current_dir_name_(work_folder),
-      db_meta_dir_(current_dir_name_ + "/data"),
+    : current_dir_name_(work_folder), db_meta_dir_(current_dir_name_ + "/data"),
       db_meta_handler_(db_meta_dir_),
-      db_handler_(db_meta_handler_, db_meta_dir_)
-{
-}
+      db_handler_(db_meta_handler_, db_meta_dir_) {}
 
-void UserAction::print_debug_info()
-{
-    cout << "\n=========================debug_info============================\n";
-    cout << "current_dir_name: " << current_dir_name_ << '\n';
-    cout << "db_meta_dir: " << db_meta_dir_ << '\n';
-    cout << "\n===============database_meta==================\n";
-    cout << db_meta_handler_.get_database_meta() << '\n';
-    cout << "\n===============database_meta==================\n";
+void UserAction::print_debug_info() {
 
-    if (current_used_database_)
-    {
-        cout << "current used database name" << current_used_database_->get_database_name() << "table info:";
-        auto table_names = current_used_database_->get_all_table_names();
-        for (auto it = table_names.begin(); it != table_names.end(); it++)
-        {
-            cout << "table name:" << *it << '\n';
-            cout << "table dir:" << current_used_database_->get_table_dir(*it) << '\n';
-            cout << "table meta:" << current_used_database_->get_table_meta(*it) << '\n';
-        }
-        cout << endl;
+  cout << "\n=========================debug_info============================\n";
+  cout << "current_dir_name: " << current_dir_name_ << '\n';
+  cout << "db_meta_dir: " << db_meta_dir_ << '\n';
+  cout << "\n===============database_meta==================\n";
+  cout << db_meta_handler_.get_database_meta() << '\n';
+  cout << "\n===============database_meta==================\n";
+
+  if (current_used_database_) {
+
+    cout << "current used database name"
+         << current_used_database_->get_database_name() << "table info:";
+
+    auto table_names = current_used_database_->get_all_table_names();
+
+    for (auto it = table_names.begin(); it != table_names.end(); it++) {
+      cout << "table name:" << *it << '\n';
+      cout << "table dir:" << current_used_database_->get_table_dir(*it)
+           << '\n';
+      cout << "table meta:" << current_used_database_->get_table_meta(*it)
+           << '\n';
     }
 
-    cout << "\n=========================debug_info============================\n";
+    cout << endl;
+  }
+
+  cout << "\n=========================debug_info============================\n";
 }
 
-void UserAction::show_database_names()
-{
-    list<string> database_names = db_handler_.get_all_database_name();
+void UserAction::show_database_names() {
 
-    if (database_names.empty())
-    {
-        cout << "no database" << '\n';
-        return;
+  list<string> database_names = db_handler_.get_all_database_name();
+
+  if (database_names.empty()) {
+    cout << "no database" << '\n';
+    return;
+  }
+
+  for (auto it = database_names.begin(); it != database_names.end(); it++) {
+    cout << "database names:" << *it << ' ';
+  }
+  
+  cout << '\n';
+}
+
+void UserAction::create_a_database(const string &database_name) {
+
+  status_code err = db_handler_.create(database_name);
+
+  if (err)
+    cout << "database create error:" << err << '\n';
+}
+
+void UserAction::drop_a_database(const string &database_name) {
+
+  status_code err = db_handler_.drop(database_name);
+
+  if (err)
+    cout << "database drop error:" << err << '\n';
+}
+
+void UserAction::use_a_database(const string &database_name) {
+
+  auto it = map_of_table_name_to_table_handler_.find(database_name);
+
+  // 若数据库已经在缓存中
+  if (it != map_of_table_name_to_table_handler_.end()) {
+    current_used_database_ = map_of_table_name_to_table_handler_[database_name];
+  } else {
+    TablesHandler *table_handler = db_handler_.open(database_name);
+    if (!table_handler) {
+      cout << "error: fail to open the database, database not exists.\n";
+    } else {
+      map_of_table_name_to_table_handler_[database_name] = table_handler;
+      current_used_database_ =
+          map_of_table_name_to_table_handler_[database_name];
     }
-
-    for (auto it = database_names.begin(); it != database_names.end(); it++)
-    {
-        cout << "database names:" << *it << ' ';
-    }
-    cout << '\n';
+  }
 }
 
-void UserAction::create_a_database(const string &database_name)
-{
-    status_code err = db_handler_.create(database_name);
-    if (err)
-        cout << "database create error:" << err << '\n';
+void UserAction::show_table_names() {
+
+  // debug
+  // status::ERROR_TABLE_NOT_OPENED
+  assert(current_used_database_);
+
+  list<string> table_names = current_used_database_->get_all_table_names();
+
+  if (table_names.empty()) {
+    cout << "no table" << '\n';
+    return;
+  }
+
+  for (auto it = table_names.begin(); it != table_names.end(); it++) {
+    cout << *it << ' ';
+  }
+
+  cout << '\n';
 }
 
-void UserAction::drop_a_database(const string &database_name)
-{
-    status_code err = db_handler_.drop(database_name);
-    if (err)
-        cout << "database drop error:" << err << '\n';
+void UserAction::create_a_table(const string &table_name, json &table_meta) {
+  // debug
+  // status::ERROR_TABLE_NOT_OPENED
+  assert(current_used_database_);
+
+  //  data/数据库名/表名/
+  string default_table_dir = db_meta_dir_ + '/' +
+                             current_used_database_->get_database_name() + '/' +
+                             table_name;
+
+  // 创建文件夹
+  Tools::make_dir(default_table_dir);
+
+  // 建表
+  status_code err = current_used_database_->create_table(
+      default_table_dir, table_name, table_meta, db_meta_handler_);
+
+  if (err)
+    cout << "table create error:" << err << '\n';
 }
 
-void UserAction::use_a_database(const string &database_name)
-{
-    auto it = map_of_table_name_to_table_handler_.find(database_name);
+void UserAction::drop_a_table(const string &table_name) {
 
-    // 若数据库已经在缓存中
-    if (it != map_of_table_name_to_table_handler_.end())
-    {
-        current_used_database_ = map_of_table_name_to_table_handler_[database_name];
-    }
-    else
-    {
-        TablesHandler *table_handler = db_handler_.open(database_name);
-        if (!table_handler)
-        {
-            cout << "error: fail to open the database, database not exists.\n";
-        }
-        else
-        {
-            map_of_table_name_to_table_handler_[database_name] = table_handler;
-            current_used_database_ = map_of_table_name_to_table_handler_[database_name];
-        }
-    }
+  status_code err =
+      current_used_database_->drop_table(table_name, db_meta_handler_);
+
+  if (err)
+    cout << "table drop error:" << err << '\n';
 }
 
-void UserAction::show_table_names()
-{
-    // debug
-    // status::ERROR_TABLE_NOT_OPENED
-    assert(current_used_database_);
-
-    list<string> table_names = current_used_database_->get_all_table_names();
-
-    if (table_names.empty())
-    {
-        cout << "no table" << '\n';
-        return;
-    }
-
-    for (auto it = table_names.begin(); it != table_names.end(); it++)
-    {
-        cout << *it << ' ';
-    }
-    cout << '\n';
-}
-
-void UserAction::create_a_table(const string &table_name, json &table_meta)
-{
-    // debug
-    // status::ERROR_TABLE_NOT_OPENED
-    assert(current_used_database_);
-    
-    //  data/数据库名/表名/
-    string default_table_dir = db_meta_dir_ + '/' + current_used_database_->get_database_name() + '/' + table_name;
-
-    // 创建文件夹
-    Tools::make_dir(default_table_dir);
-
-    // 建表
-    status_code err = current_used_database_->create_table(default_table_dir, table_name, table_meta, db_meta_handler_);
-
-    if (err)
-        cout << "table create error:" << err << '\n';
-}
-
-void UserAction::drop_a_table(const string &table_name)
-{
-    status_code err = current_used_database_->drop_table(table_name, db_meta_handler_);
-
-    if (err)
-        cout << "table drop error:" << err << '\n';
-}
-
-// // 后续append和get_lines都封装到TableHandler里面去，这样TableHandler也不用对外提供TableMetaHandler了
+// //
+// 后续append和get_lines都封装到TableHandler里面去，这样TableHandler也不用对外提供TableMetaHandler了
 // void UserAction::insert(const string &table_name, json &rows_info)
 // {
-//     string database_path = current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb";
+//     string database_path = current_used_database_->get_table_dir(table_name)
+//     + '/' + table_name + ".mdb";
 
 //     // 打开table_row_handler
 //     TableRowHandler table_row_handler(
@@ -170,7 +169,8 @@ void UserAction::drop_a_table(const string &table_name)
 // {
 //     // 实例化 TableRowHandler
 //     TableRowHandler table_row_handler(
-//         current_used_database_->get_table_dir(table_name) + '/' + table_name + ".mdb",
+//         current_used_database_->get_table_dir(table_name) + '/' + table_name
+//         + ".mdb",
 //         current_used_database_->get_table_meta_handler(table_name));
 
 //     // 生成要求的列的编号
@@ -182,16 +182,18 @@ void UserAction::drop_a_table(const string &table_name)
 //     if (debug_mode)
 //     {
 //         // 把数据读取后序列化为JSON
-//         nlohmann::json *outcome = table_row_handler.read_and_deserialize<nlohmann::json>(off_set, line_number, wanted_column_orders);
-//         cout << *outcome << endl;
+//         nlohmann::json *outcome =
+//         table_row_handler.read_and_deserialize<nlohmann::json>(off_set,
+//         line_number, wanted_column_orders); cout << *outcome << endl;
 
 //         delete outcome;
 //         return;
 //     }
 
 //     // 把数据读取后序列化为list
-//     list<nlohmann::json> *outcome = table_row_handler.read_and_deserialize<list<nlohmann::json>>(off_set, line_number, wanted_column_orders);
-//     cout << *outcome << endl;
+//     list<nlohmann::json> *outcome =
+//     table_row_handler.read_and_deserialize<list<nlohmann::json>>(off_set,
+//     line_number, wanted_column_orders); cout << *outcome << endl;
 
 //     // 后续其他操作
 //     delete outcome;
