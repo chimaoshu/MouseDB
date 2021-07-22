@@ -44,12 +44,15 @@ StatusCode DataFileHandler::open(const string &file_path, bool write,
   assert(read || write);
 
   // 如果不写，那么只能有读属性
-  // 如果文件不存在，那么就只能有读属性
-  if (!write || !file_exist(file_path))
+  if (!write)
     assert(read && !append && !truncate);
 
-  // truncate和append不能同时出现
-  assert(!truncate || !append);
+  // 如果文件不存在，那么就不能有读属性
+  if (!file_exist(file_path))
+    assert(!read);
+
+    // truncate和append不能同时出现
+    assert(!truncate || !append);
 
   // 根据传入参数设置open_mode
   ios::openmode open_mode_of_file = ios::binary;
