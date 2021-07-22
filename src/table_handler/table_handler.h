@@ -76,7 +76,7 @@ private:
   void set_cold_data_manager_in_map(const std::string &table_name,
                                     ColdDataManager *new_cold_data_manager);
 
-  status_code dump_table_in_sub_thread(const std::string &table_name);
+  StatusCode dump_table_in_sub_thread(const std::string &table_name);
 
 public:
   // 构造函数，传入数据库元数据的JSON信息（databse_meta）
@@ -91,7 +91,7 @@ public:
   std::list<nlohmann::json> query(const std::string &table_name);
 
   // 对某个table进行hot-dump操作
-  status_code dump_table(const std::string &table_name);
+  StatusCode dump_table(const std::string &table_name);
 
   // 获得数据库名
   const std::string &get_database_name();
@@ -110,7 +110,7 @@ public:
   // table_name：表名
   // table_meta：表头
   // db_mete_handler：对数据库元数据进行操作
-  status_code create_table(const std::string &table_directory,
+  StatusCode create_table(const std::string &table_directory,
                            const std::string &table_name,
                            nlohmann::json &table_meta,
                            DatabaseMetaHandler &db_mete_handler);
@@ -118,7 +118,7 @@ public:
   // 传入表名与DatabaseMetaHandler实例
   // 删除一个表，所做的工作包括：
   // 在database_meta中抹除该表信息并保存、在磁盘上删除对应表路径下的JSON与MDB文件
-  status_code drop_table(const std::string &table_name,
+  StatusCode drop_table(const std::string &table_name,
                          DatabaseMetaHandler &db_mete_handler);
 
   // 返回该数据库下所有表的表名

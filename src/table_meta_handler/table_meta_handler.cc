@@ -106,10 +106,10 @@ TableMetaHandler::TableMetaHandler(const string &table_meta_path,
     : table_meta_(table_meta), table_meta_path_(table_meta_path) {}
 
 // 传入存储路径
-status_code TableMetaHandler::save(const string &table_meta_path) {
+StatusCode TableMetaHandler::save(const string &table_meta_path) {
   DataFileHandler file;
 
-  status_code err = file.open(table_meta_path, 1, 0, 1, 0);
+  StatusCode err = file.open(table_meta_path, 1, 0, 1, 0);
 
   // 路径文件不存在
   if (err)
@@ -117,15 +117,15 @@ status_code TableMetaHandler::save(const string &table_meta_path) {
 
   file.append(table_meta_.dump());
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }
 
 // 覆盖原文件存储
-status_code TableMetaHandler::save() {
+StatusCode TableMetaHandler::save() {
 
   DataFileHandler file;
 
-  status_code err = file.open(table_meta_path_, 1, 0, 1, 0);
+  StatusCode err = file.open(table_meta_path_, 1, 0, 1, 0);
 
   // 路径文件不存在
   if (err)
@@ -133,16 +133,16 @@ status_code TableMetaHandler::save() {
 
   file.append(table_meta_.dump());
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }
 
 // 从磁盘中读取表头信息
-status_code TableMetaHandler::load() {
+StatusCode TableMetaHandler::load() {
 
   DataFileHandler file;
 
   // 只读
-  status_code err = file.open(table_meta_path_, 0, 0, 0, 1);
+  StatusCode err = file.open(table_meta_path_, 0, 0, 0, 1);
 
   // 一般是路径错误，文件打不开
   if (err) {
@@ -155,7 +155,7 @@ status_code TableMetaHandler::load() {
   if (!p.first.empty()) {
 
     table_meta_ = json::parse(p.first);
-    return status::SUCCESS;
+    return StatusCode::SUCCESS;
 
   } else {
 
@@ -213,11 +213,11 @@ TableMetaHandler::get_column_orders_by_names(const list<string> &column_names) {
   return output;
 }
 
-status_code TableMetaHandler::set_column_info_and_line_size() {
+StatusCode TableMetaHandler::set_column_info_and_line_size() {
 
   // 若已有缓存，直接返回
   if (!off_set_of_each_column_.empty())
-    return status::SUCCESS;
+    return StatusCode::SUCCESS;
 
   json &primary_keys = table_meta_["primary_key"];
   json &other_keys = table_meta_["other_keys"];
@@ -269,7 +269,7 @@ status_code TableMetaHandler::set_column_info_and_line_size() {
     auto type_it = it->find("type");
 
     if (type_it == it->end()) {
-      return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+      return StatusCode::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
     }
 
     // key的数据种类
@@ -308,7 +308,7 @@ status_code TableMetaHandler::set_column_info_and_line_size() {
       type_of_each_column_[i - 1] = 10;
 
     } else {
-      return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+      return StatusCode::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
     }
 
     // 设置从列名到列序号的映射，列序号从1开始
@@ -329,7 +329,7 @@ status_code TableMetaHandler::set_column_info_and_line_size() {
     auto type_it = it->find("type");
 
     if (type_it == it->end()) {
-      return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+      return StatusCode::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
     }
 
     // key的数据种类
@@ -368,7 +368,7 @@ status_code TableMetaHandler::set_column_info_and_line_size() {
       type_of_each_column_[i - 1] = 10;
 
     } else {
-      return status::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
+      return StatusCode::ERROR_KEY_TYPE_NOT_FOUND_IN_TABLE_META;
     }
 
     // 设置从列名到列序号的映射
@@ -382,5 +382,5 @@ status_code TableMetaHandler::set_column_info_and_line_size() {
     i++;
   }
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }

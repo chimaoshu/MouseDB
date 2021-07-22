@@ -11,7 +11,7 @@ DatabaseHandler::DatabaseHandler(DatabaseMetaHandler &database_meta_handler,
       database_meta_(database_meta_handler.get_database_meta()),
       database_meta_dir_(database_meta_dir) {}
 
-status_code DatabaseHandler::create(const string &database_name) {
+StatusCode DatabaseHandler::create(const string &database_name) {
   string database_dir = database_meta_dir_ + '/' + database_name;
   if (!Tools::dir_or_file_exists(database_dir))
     Tools::make_dir(database_dir);
@@ -33,11 +33,11 @@ TablesHandler *DatabaseHandler::open(const string &database_name) {
   }
 }
 
-status_code DatabaseHandler::drop(const string &database_name) {
+StatusCode DatabaseHandler::drop(const string &database_name) {
   // 判断数据库是否存在
   auto i = database_meta_.find(database_name);
   if (i == database_meta_.end()) {
-    return status::ERROR_DATABASE_NOT_EXISTS;
+    return StatusCode::ERROR_DATABASE_NOT_EXISTS;
   } else {
     // 实例化一个数据处理类
     TablesHandler table_handler = TablesHandler(database_name, database_meta_);

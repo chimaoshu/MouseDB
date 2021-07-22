@@ -26,7 +26,7 @@ private:
 
   // 建立索引，赋值到index_
   // 即每128行为一块，每块用块头第一行表示
-  status_code build_index();
+  StatusCode build_index();
 
   // 传入两个主键，获取处于两者之间的数据在文件中的行数（min<=output<=max），包括min==max的情况
   // TODO 以后加个min<answer<max

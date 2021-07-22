@@ -67,10 +67,10 @@ private:
   // type_of_each_column_
   // map_from_column_name_to_column_order_
   // 对以上三个关于行和列的信息进行计算并存储
-  status_code set_column_info_and_line_size();
+  StatusCode set_column_info_and_line_size();
 
   // 通过类成员中的table_meta_path_读取文件数据
-  status_code load();
+  StatusCode load();
 
 public:
   // 以下三个函数：
@@ -150,10 +150,10 @@ public:
                    nlohmann::json &table_meta);
 
   // 使用传入的路径保存表头文件（另存为）
-  status_code save(const std::string &table_meta_path);
+  StatusCode save(const std::string &table_meta_path);
 
   // 使用类成员中的表头路径保存表头文件（替换原文件内容）
-  status_code save();
+  StatusCode save();
 
   // 传入列名，获取对应的列序号并从小到大排序返回
   std::list<int>

@@ -17,7 +17,7 @@
 #include "src/tools/tools.h"
 
 class UserAction {
-    
+
 private:
   // 工作目录
   std::string current_dir_name_;

@@ -76,7 +76,7 @@ public:
   //     [3,2,88]
   // ]
   // 调试用JSON、使用换Vector
-  template <class T> status_code serialize_and_write(const T &rows_information);
+  template <class T> StatusCode serialize_and_write(const T &rows_information);
 
   // 读取一行的数据，返回pair
   // pair第一个指针指向读取那行的内存

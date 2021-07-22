@@ -84,7 +84,7 @@ T *TableRowHandler::read_and_deserialize(uint32_t &off_set,
 }
 
 template <class T>
-status_code TableRowHandler::serialize_and_write(const T &rows_information) {
+StatusCode TableRowHandler::serialize_and_write(const T &rows_information) {
 
   // 行数目
   int rows_number = rows_information.size();
@@ -95,7 +95,7 @@ status_code TableRowHandler::serialize_and_write(const T &rows_information) {
   void *buffer = new char[buffer_size];
 
   if (!buffer) {
-    return status::ERROR_MEMORY_ALLOCATION_FAIL;
+    return StatusCode::ERROR_MEMORY_ALLOCATION_FAIL;
   }
 
   // 遍历每一行
@@ -130,7 +130,7 @@ status_code TableRowHandler::serialize_and_write(const T &rows_information) {
     delete[](char *) buffer;
   }
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }
 
 // 读取一行的数据，返回pair
@@ -256,7 +256,7 @@ template list<json> *
 TableRowHandler::read_and_deserialize(uint32_t &off_set, uint32_t &line_number,
                                       list<int> wanted_columns);
 
-template status_code
+template StatusCode
 TableRowHandler::serialize_and_write(const list<json> &rows_information);
-template status_code
+template StatusCode
 TableRowHandler::serialize_and_write(const json &rows_information);

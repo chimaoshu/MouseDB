@@ -37,7 +37,7 @@ uint64_t DataFileHandler::get_file_size() {
   return file_.tellp();
 }
 
-status_code DataFileHandler::open(const string &file_path, bool write,
+StatusCode DataFileHandler::open(const string &file_path, bool write,
                                   bool append, bool truncate, bool read) {
   // 根据传入参数设置open_mode
   ios::openmode open_mode_of_file = ios::binary;
@@ -64,7 +64,7 @@ status_code DataFileHandler::open(const string &file_path, bool write,
 
     // 路径错误或打开方式错误
     if (!file_.is_open())
-      return status::ERROR_FILE_NOT_EXISTS;
+      return StatusCode::ERROR_FILE_NOT_EXISTS;
 
     // 获取文件大小
     file_.seekg(0, ios::end);
@@ -77,7 +77,7 @@ status_code DataFileHandler::open(const string &file_path, bool write,
 
     // ERROR_FILE_NOT_EXISTS
     if (!file_.is_open())
-      return status::ERROR_FILE_NOT_EXISTS;
+      return StatusCode::ERROR_FILE_NOT_EXISTS;
 
     // 获取文件大小
     file_.seekp(0, ios::end);
@@ -91,7 +91,7 @@ status_code DataFileHandler::open(const string &file_path, bool write,
   writable_ = write;
   truncate_ = truncate;
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }
 
 bool DataFileHandler::is_open() { return file_.is_open(); }
@@ -136,7 +136,7 @@ void DataFileHandler::append(void *buffer, int buffer_size) {
 respond<string> DataFileHandler::read_all_text() {
 
   if (writable_ && !readable_)
-    return respond<string>("", status::ERROR_NOT_READABLE);
+    return respond<string>("", StatusCode::ERROR_NOT_READABLE);
 
   // 移动至末尾
   file_.seekg(0, ios::end);
@@ -151,7 +151,7 @@ respond<string> DataFileHandler::read_all_text() {
   char *char_file_content = new char[buffer_length + 1];
 
   if (!char_file_content)
-    return respond<string>("", status::ERROR_MEMORY_ALLOCATION_FAIL);
+    return respond<string>("", StatusCode::ERROR_MEMORY_ALLOCATION_FAIL);
 
   file_.read(char_file_content, buffer_length);
   char_file_content[buffer_length] = '\0';
@@ -160,7 +160,7 @@ respond<string> DataFileHandler::read_all_text() {
 
   delete[] char_file_content;
 
-  return respond<string>(file_content, status::SUCCESS);
+  return respond<string>(file_content, StatusCode::SUCCESS);
 }
 
 void *DataFileHandler::read_page_to_memory(uint32_t page_order) {
@@ -223,7 +223,7 @@ void *DataFileHandler::LRU_get(uint32_t page_order) {
     uint32_t order_of_page_to_delete = LRU_cache_list.back();
     auto it = pages_cache_.find(order_of_page_to_delete);
 
-    // status::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH
+    // StatusCode::ERROR_CACHE_MAP_AND_LRU_INFO_DO_NOT_MATCH
     assert(it != pages_cache_.end());
 
     // 淘汰掉优先级最低缓存
@@ -306,7 +306,7 @@ pair<void *, uint32_t> DataFileHandler::read_lines_into_buffer(
   // 计算磁盘读取的结束地址
   int end_position = start_position + buffer_size;
 
-  // status::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
+  // StatusCode::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
   assert(end_position <= file_size_);
 
   // 计算最后需要读取到哪一页（包括边界情况）
@@ -390,7 +390,7 @@ void *DataFileHandler::read_primary_key_into_buffer(
   // 计算磁盘读取的结束地址
   int end_position = start_position + buffer_size;
 
-  // status::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
+  // StatusCode::ERROR_DEMANDING_LINES_TO_READ_EXCEEDS_THE_FILE_SIZE
   assert(end_position <= file_size_);
 
   // 计算最后需要读取到哪一页（包括边界情况）

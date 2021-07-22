@@ -84,7 +84,7 @@ public:
   // append：可写时从最后写
   // truncate：可写时在打开时清空文件
   // read：可读
-  status_code open(const std::string &file_path, bool write = 1,
+  StatusCode open(const std::string &file_path, bool write = 1,
                    bool append = 0, bool truncate = 0, bool read = 0);
 
   // 移动游标到文件头，默认移动到文件头，适合接下来进行顺序读

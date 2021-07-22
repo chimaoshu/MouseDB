@@ -131,10 +131,10 @@ HotDataManager::~HotDataManager() {
 
 // 后续应该支持使用protobuf而不是json这种及其浪费资源的东西
 // 传入参数不为const是因为要在循环前对引用single_row预留空间
-status_code HotDataManager::insert_rows(const json &rows_info) {
+StatusCode HotDataManager::insert_rows(const json &rows_info) {
 
   // 先写入文件
-  status_code err = current_used_hot_data_file_->serialize_and_write(rows_info);
+  StatusCode err = current_used_hot_data_file_->serialize_and_write(rows_info);
 
   // 再存到红黑树
   if (!err) {

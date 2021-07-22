@@ -100,13 +100,13 @@ public:
 
   // 后续应该支持使用protobuf而不是json这种及其浪费资源的东西
   // 传入参数不为const是因为要在循环前对引用single_row预留空间
-  status_code insert_rows(const nlohmann::json &rows_info);
+  StatusCode insert_rows(const nlohmann::json &rows_info);
 
   // 删除数据
-  status_code delete_rows();
+  StatusCode delete_rows();
 
   // 修改数据
-  status_code update_rows();
+  StatusCode update_rows();
 
   // TablesHandler在接收到查询请求时会调用该函数进行检查
   // 若已经在切换模式，则将查询请求缓存到消息队列中，等待切换完成后使用新的一套冷热数据进行查询

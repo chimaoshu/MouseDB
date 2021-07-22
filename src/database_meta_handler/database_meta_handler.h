@@ -34,7 +34,7 @@ private:
   // 通过类成员中的文件路径去读取元数据
   // 当文件读取失败时，会抛出异常
   // 当JSON格式不合法时，会返回错误码
-  status_code load();
+  StatusCode load();
 
 public:
   // 返回数据库元数据JSON文件的存储路径
@@ -55,28 +55,28 @@ public:
                       nlohmann::json &database_meta);
 
   // 覆盖原来文件保存
-  status_code save();
+  StatusCode save();
 
   // 另存为其他路径下的文件
-  status_code save(const std::string &database_meta_path);
+  StatusCode save(const std::string &database_meta_path);
 
   // 在元数据中加入一个数据库，并返回状态码
   // 在使用save()函数保存之间，数据不会被存储到磁盘中
-  status_code add_database_in_json(const std::string &database_name);
+  StatusCode add_database_in_json(const std::string &database_name);
 
   // 在元数据中加入一个表，并返回状态码
   // 在使用save()函数保存之间，数据不会被存储到磁盘中
-  status_code add_table_in_json(const std::string &database_name,
+  StatusCode add_table_in_json(const std::string &database_name,
                                 const std::string &table_name,
                                 const std::string &table_dir);
 
   // 在元数据中删除一个数据库，并返回状态码
   // 在使用save()函数保存之间，数据不会被存储到磁盘中
-  status_code delete_database_in_json(const std::string &database_name);
+  StatusCode delete_database_in_json(const std::string &database_name);
 
   // 在元数据中删除一个表，并返回状态码
   // 在使用save()函数保存之间，数据不会被存储到磁盘中
-  status_code delete_table_in_json(const std::string &database_name,
+  StatusCode delete_table_in_json(const std::string &database_name,
                                    const std::string &table_name);
 };
 

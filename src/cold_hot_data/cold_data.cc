@@ -5,7 +5,7 @@ using namespace std;
 
 // 建立索引，赋值到index_
 // 即每128行为一块，每块用块头第一行表示
-status_code ColdDataManager::build_index() {
+StatusCode ColdDataManager::build_index() {
 
   assert(cold_data_file_ != NULL);
 
@@ -42,7 +42,7 @@ status_code ColdDataManager::build_index() {
     order_to_read += 128;
   }
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }
 
 // 读取冷数据文件数据，建立索引

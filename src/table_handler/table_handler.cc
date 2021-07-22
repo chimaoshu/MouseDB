@@ -56,7 +56,7 @@ string TablesHandler::get_table_dir(const string &table_name) {
     return "";
 }
 
-status_code TablesHandler::create_table(const string &table_directory,
+StatusCode TablesHandler::create_table(const string &table_directory,
                                         const string &table_name,
                                         json &table_meta,
                                         DatabaseMetaHandler &db_mete_handler) {
@@ -79,7 +79,7 @@ status_code TablesHandler::create_table(const string &table_directory,
   return map_of_table_name_to_table_meta_handler_[table_name]->save();
 }
 
-status_code TablesHandler::drop_table(const string &table_name,
+StatusCode TablesHandler::drop_table(const string &table_name,
                                       DatabaseMetaHandler &db_mete_handler) {
   string table_dir = get_table_dir(table_name);
 
@@ -93,7 +93,7 @@ status_code TablesHandler::drop_table(const string &table_name,
   remove(table_dir.c_str());
 
   // 调用DatabaseMetaHandler来抹去JSON上该表数据
-  status_code error =
+  StatusCode error =
       db_mete_handler.delete_table_in_json(database_name_, table_name);
 
   // 保存到磁盘
@@ -192,7 +192,7 @@ void TablesHandler::set_cold_data_manager_in_map(
   map_of_table_name_to_cold_data_manager_[table_name] = new_cold_data_manager;
 }
 
-status_code TablesHandler::dump_table_in_sub_thread(const string &table_name) {
+StatusCode TablesHandler::dump_table_in_sub_thread(const string &table_name) {
 
   // 运行在子线程中
 
@@ -236,10 +236,10 @@ status_code TablesHandler::dump_table_in_sub_thread(const string &table_name) {
   delete old_hot_data_manager;
   this->set_hot_data_manager_in_map(table_name, new_hot_data_manager);
 
-  return status::SUCCESS;
+  return StatusCode::SUCCESS;
 }
 
-status_code TablesHandler::dump_table(const string &table_name) {
+StatusCode TablesHandler::dump_table(const string &table_name) {
 
   // 创建子线程
   thread hot_dump_thread(&TablesHandler::dump_table_in_sub_thread, this,

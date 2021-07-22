@@ -41,7 +41,7 @@ public:
 
   // 创建一个数据库并返回状态码
   // 将调用DatabaseMetaHandler实例对JSON进行修改，并创建一个目录
-  status_code create(const std::string &database_name);
+  StatusCode create(const std::string &database_name);
 
   // 打开一个数据库，返回指向TablesHandler实例的指针
   // 若指针为空，则打开失败
@@ -49,7 +49,7 @@ public:
 
   // 删除一个数据库并返回状态码
   // 过程包括：删除数据库中的表、表头，删除数据库元数据中内容
-  status_code drop(const std::string &database_name);
+  StatusCode drop(const std::string &database_name);
 
   // 返回所有数据库的名字
   std::list<std::string> get_all_database_name();
