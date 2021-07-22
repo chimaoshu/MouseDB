@@ -7,23 +7,22 @@
 using namespace std;
 using json = nlohmann::json;
 
-class DatabaseMetaHandlerUnitTest
-{
+class DatabaseMetaHandlerUnitTest {
 public:
-    void test_load_and_save()
-    {
-        DatabaseMetaHandler *table = new DatabaseMetaHandler("./test/handler_unit_test/database_meta_handler/test.json");
-        json j = table->get_database_meta();
+  void test_load_and_save() {
+    DatabaseMetaHandler *table = new DatabaseMetaHandler(
+        "./test/handler_unit_test/database_meta_handler/test.json");
+    json j = table->get_database_meta();
 
-        table->save("./test/handler_unit_test/database_meta_handler/test_save.json");
+    table->save(
+        "./test/handler_unit_test/database_meta_handler/test_save.json");
 
-        return;
-    }
+    return;
+  }
 };
 
-int main()
-{
-    DatabaseMetaHandlerUnitTest a;
-    a.test_load_and_save();
-    return 0;
+int main() {
+  DatabaseMetaHandlerUnitTest a;
+  a.test_load_and_save();
+  return 0;
 }

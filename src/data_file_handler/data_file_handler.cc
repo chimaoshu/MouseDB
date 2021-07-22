@@ -38,7 +38,7 @@ uint64_t DataFileHandler::get_file_size() {
 }
 
 StatusCode DataFileHandler::open(const string &file_path, bool write,
-                                  bool append, bool truncate, bool read) {
+                                 bool append, bool truncate, bool read) {
   // 根据传入参数设置open_mode
   ios::openmode open_mode_of_file = ios::binary;
 

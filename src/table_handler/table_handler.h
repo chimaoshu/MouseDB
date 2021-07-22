@@ -72,7 +72,7 @@ private:
   // 传入表名，修改对应map里面的DataManager为新的
   void set_hot_data_manager_in_map(const std::string &table_name,
                                    HotDataManager *new_hot_data_manager);
-                                   
+
   void set_cold_data_manager_in_map(const std::string &table_name,
                                     ColdDataManager *new_cold_data_manager);
 
@@ -111,15 +111,15 @@ public:
   // table_meta：表头
   // db_mete_handler：对数据库元数据进行操作
   StatusCode create_table(const std::string &table_directory,
-                           const std::string &table_name,
-                           nlohmann::json &table_meta,
-                           DatabaseMetaHandler &db_mete_handler);
+                          const std::string &table_name,
+                          nlohmann::json &table_meta,
+                          DatabaseMetaHandler &db_mete_handler);
 
   // 传入表名与DatabaseMetaHandler实例
   // 删除一个表，所做的工作包括：
   // 在database_meta中抹除该表信息并保存、在磁盘上删除对应表路径下的JSON与MDB文件
   StatusCode drop_table(const std::string &table_name,
-                         DatabaseMetaHandler &db_mete_handler);
+                        DatabaseMetaHandler &db_mete_handler);
 
   // 返回该数据库下所有表的表名
   std::list<std::string> get_all_table_names();
