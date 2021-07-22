@@ -50,7 +50,7 @@ StatusCode DatabaseHandler::drop(const string &database_name) {
     }
 
     // 删除以数据库名命名的文件夹
-    remove((database_meta_dir_ + '/' + database_name).c_str());
+    Tools::remove_file((database_meta_dir_ + '/' + database_name).c_str());
 
     // 删除JSON中的数据库并返回错误码
     database_meta_handler_.delete_database_in_json(database_name);

@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 namespace Tools {
-    
+
 // 创建文件夹
 inline int make_dir(const std::string &dir) {
   return mkdir(dir.c_str(), S_IRWXU);
@@ -19,6 +19,11 @@ inline int make_dir(const std::string &dir) {
 // 文件或目录是否存在
 inline bool dir_or_file_exists(const std::string &path) {
   return access(path.c_str(), 0) == 0;
+}
+
+// 删除文件
+inline void remove_file(const std::string &path) {
+  std::remove(path.c_str());
 }
 
 // 获取字符串时间戳

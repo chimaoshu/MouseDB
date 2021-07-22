@@ -84,13 +84,13 @@ StatusCode TablesHandler::drop_table(const string &table_name,
   string table_dir = get_table_dir(table_name);
 
   // 先删除二进制文件
-  remove((table_dir + '/' + table_name + ".mdb").c_str());
+  Tools::remove_file((table_dir + '/' + table_name + ".mdb").c_str());
 
   // 然后删除表头
-  remove((table_dir + '/' + table_name + ".json").c_str());
+  Tools::remove_file((table_dir + '/' + table_name + ".json").c_str());
 
   // 删除文件夹
-  remove(table_dir.c_str());
+  Tools::remove_file(table_dir.c_str());
 
   // 调用DatabaseMetaHandler来抹去JSON上该表数据
   StatusCode error =
