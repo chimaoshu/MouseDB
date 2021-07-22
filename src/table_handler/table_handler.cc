@@ -57,9 +57,9 @@ string TablesHandler::get_table_dir(const string &table_name) {
 }
 
 StatusCode TablesHandler::create_table(const string &table_directory,
-                                        const string &table_name,
-                                        json &table_meta,
-                                        DatabaseMetaHandler &db_mete_handler) {
+                                       const string &table_name,
+                                       json &table_meta,
+                                       DatabaseMetaHandler &db_mete_handler) {
   // 创建表文件
   string table_path = table_directory + '/' + table_name + ".mdb";
   DataFileHandler table;
@@ -80,7 +80,7 @@ StatusCode TablesHandler::create_table(const string &table_directory,
 }
 
 StatusCode TablesHandler::drop_table(const string &table_name,
-                                      DatabaseMetaHandler &db_mete_handler) {
+                                     DatabaseMetaHandler &db_mete_handler) {
   string table_dir = get_table_dir(table_name);
 
   // 先删除二进制文件

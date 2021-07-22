@@ -96,8 +96,12 @@ public:
   // 获得数据库名
   const std::string &get_database_name();
 
-  // 传入表名、返回对应的table_meta的引用
-  // 若不存在，返回空json
+  /**
+   * @brief 获取表对应的元数据
+   * 
+   * @param table_name 表名
+   * @return const nlohmann::json& 表的元数据 若表不存在，返回空JSON
+   */
   const nlohmann::json &get_table_meta(const std::string &table_name);
 
   // 传入一个表名、获取这个表名对应的表的存储路径
@@ -105,11 +109,15 @@ public:
   // 若表不存在，返回空字符串
   std::string get_table_dir(const std::string &table_name);
 
-  // 创建一个表
-  // table_directory：表的存储路径
-  // table_name：表名
-  // table_meta：表头
-  // db_mete_handler：对数据库元数据进行操作
+  /**
+   * @brief 创建一个表
+   * 
+   * @param table_directory 表的存储路径
+   * @param table_name 表明
+   * @param table_meta 表头
+   * @param db_mete_handler 对数据库元数据进行操作
+   * @return StatusCode 状态码
+   */
   StatusCode create_table(const std::string &table_directory,
                           const std::string &table_name,
                           nlohmann::json &table_meta,
