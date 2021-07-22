@@ -4,8 +4,8 @@
 #include <string>
 
 #include "src/table_row_handler/table_row_handler.h"
-#include "src/tools/rbtree.h"
-#include "src/tools/tools.h"
+#include "src/utils/rbtree.h"
+#include "src/utils/tools.h"
 
 class HotDataManager {
 

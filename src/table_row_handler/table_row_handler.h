@@ -9,7 +9,7 @@
 #include "src/data_file_handler/data_file_handler.h"
 #include "src/table_meta_handler/table_meta_handler.h"
 #include "src/table_row_handler/buffer_reader_and_writer.h"
-#include "src/tools/rbtree.h"
+#include "src/utils/rbtree.h"
 
 class TableRowHandler {
     

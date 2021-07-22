@@ -6,7 +6,7 @@
 #include <map>
 #include <vector>
 
-#include "src/tools/type.h"
+#include "src/utils/type.h"
 
 // 要求以int32为主键，方便进行检索
 typedef int32_t primary_key_type;
