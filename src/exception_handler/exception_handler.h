@@ -1,11 +1,11 @@
 #ifndef MOUSEDB_SRC_EXCEPTION_HANDLER_EXCEPTION_HANDLER_H_
 #define MOUSEDB_SRC_EXCEPTION_HANDLER_EXCEPTION_HANDLER_H_
 
-#include <assert.h>
 #include <stdint.h>
 
-#include <stdexcept>
 #include <string>
+#include <cassert>
+#include <stdexcept>
 
 // 定义状态码
 enum StatusCode {
