@@ -150,8 +150,7 @@ void DataFileHandler::append(void *buffer, int buffer_size) {
 // 读字符串
 respond<string> DataFileHandler::read_all_text() {
 
-  if (writable_ && !readable_)
-    return respond<string>("", StatusCode::ERROR_NOT_READABLE);
+  assert(readable_);
 
   // 移动至末尾
   file_.seekg(0, ios::end);
@@ -170,8 +169,8 @@ respond<string> DataFileHandler::read_all_text() {
 
   file_.read(char_file_content, buffer_length);
   char_file_content[buffer_length] = '\0';
-
-  string file_content = char_file_content;
+  
+  string file_content(char_file_content);
 
   delete[] char_file_content;
 

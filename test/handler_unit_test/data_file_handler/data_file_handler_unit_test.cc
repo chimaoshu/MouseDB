@@ -2,54 +2,73 @@
 #include <string>
 
 #include "src/data_file_handler/data_file_handler.h"
+#include "src/utils/tools.h"
 
 using namespace std;
 
 class DataFileHandlerUnitTest {
+
+private:
+  const string file_path =
+      "./test/handler_unit_test/data_file_handler/test.json";
+
 public:
-  void test_open() {
+  // 测试创建文件的功能
+  void test_create() {
+
+    Tools::remove_file(file_path.c_str());
+
     DataFileHandler a;
-    a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
-    respond<string> b = a.read_all_text();
-    cout << b.first;
+    a.open(file_path.c_str(), 1, 0, 0, 0);
+
+    assert(a.is_open());
   }
 
-  void test_append() {
-    DataFileHandler a, b;
-    a.open("./test/handler_unit_test/data_file_handler/test.json", 1, 1, 0, 0);
-    a.append("\ntest");
+  // 测试写与读的功能
+  void test_read_and_write() {
+
+    Tools::remove_file(file_path.c_str());
+
+    // 创建文件
+    DataFileHandler a;
+    a.open(file_path.c_str(), 1, 0, 0, 0);
+    a.close();
+    assert(DataFileHandler::file_exist(file_path.c_str()));
+
+    // 写
+    a.open(file_path.c_str(), 1, 1, 0, 1);
+    a.append(file_path);
+
+    // 读
+    auto res = a.read_all_text();
+    assert(res.second == StatusCode::SUCCESS && res.first == file_path);
+
+    // 二进制读
+    auto res2 = a.read_lines_into_buffer(0, 1, 1, false, true);
+    int str_len = res2.second;
+    char *str = (char *)res2.first;
+
+    // 逐个字符比较
+    for (int i = 0; i < str_len; i++) {
+      char tmp = *(str + i);
+      assert(tmp == file_path[i]);
+    }
+
+    // 二进制读2
+    for (int i = 0; i < str_len; i++) {
+      a.move_g_cursor(0);
+      char *str2 = (char *)a.read_primary_key_into_buffer(0, 1, true);
+      assert(*str2 == file_path[i]);
+    }
   }
 
-  void test_read_all() {
-    DataFileHandler a;
-    a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
-    respond<string> b = a.read_all_text();
-    cout << b.first << endl;
-  }
-
-  void test_create_file() {
-    DataFileHandler a;
-    a.open("./test/handler_unit_test/data_file_handler/test2.json", 1, 0, 1, 0);
-  }
-
-  void test_read_lines_into_buffer() {
-    DataFileHandler a;
-    a.open("./test/handler_unit_test/data_file_handler/test.json", 0, 0, 0, 1);
-    auto res = a.read_lines_into_buffer(0, 2, 5);
-    void *p = res.first;
-    int available_lines = res.second;
-    cout << available_lines << endl;
-    cout << (char *)p << endl;
-  }
+  ~DataFileHandlerUnitTest() { Tools::remove_file(file_path.c_str()); }
 };
 
 int main() {
-  // cout << 123 << endl;
   DataFileHandlerUnitTest a;
-  a.test_append();
-  a.test_open();
-  a.test_read_all();
-  a.test_create_file();
-  a.test_read_lines_into_buffer();
+  a.test_create();
+  a.test_read_and_write();
+  cout << "DataFileHandler单元测试通过" << endl;
   return 0;
 }
