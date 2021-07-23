@@ -10,3 +10,4 @@ test/executable_file/*
 data
 TODO
 bin/*
+!.gitkeep
