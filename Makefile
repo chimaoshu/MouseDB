@@ -6,7 +6,7 @@ DBG_TYPE = g
 
 HANDLER_SOURCE_DIR = src
 
-EXERC_FILE_DIR = test/executable_file
+EXERC_FILE_DIR = bin
 HANDLER_TEST_DIR = test/handler_unit_test
 
 DFH = data_file_handler

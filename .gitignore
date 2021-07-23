@@ -1,4 +1,4 @@
-.vscode/
+# .vscode/
 
 test/test_proto
 test/other
@@ -7,5 +7,6 @@ test/executable_file/*
 
 *.o
 
-/data
-/TODO
+data
+TODO
+bin/*
